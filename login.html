@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>เข้าสู่ระบบ · DXF → G-Code Generator</title>
+<link rel="stylesheet" href="styles.css">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<style>
+  .auth-shell { min-height: 100vh; display: flex; align-items: center; justify-content: center; background: var(--steel-900); }
+  .auth-card { width: 360px; background: var(--steel-800); border: 1px solid var(--line); border-radius: 12px; padding: 32px 28px; }
+  .auth-card .brand-mark { font-size: 34px; color: var(--amber); display: block; margin-bottom: 6px; text-align: center; }
+  .auth-card .brand-mark.brand-logo { width: 52px; height: 52px; padding: 6px; margin: 0 auto 14px; }
+  .auth-card h1 { font-size: 16px; letter-spacing: .04em; margin: 0 0 4px; text-align: center; }
+  .auth-card p.sub { color: var(--ink-dim); font-size: 12px; margin: 0 0 22px; text-align: center; }
+  .auth-card .fld { margin-bottom: 12px; }
+  .auth-tabs { display: flex; gap: 4px; margin-bottom: 18px; background: var(--steel-700); border-radius: 7px; padding: 3px; }
+  .auth-tabs button { flex: 1; padding: 8px; border: none; background: transparent; color: var(--ink-dim); border-radius: 5px; font-size: 12px; font-weight: 600; cursor: pointer; }
+  .auth-tabs button.active { background: var(--amber); color: #1a1206; }
+  .auth-card .btn { width: 100%; justify-content: center; padding: 11px; margin-top: 6px; }
+  #authStatus { font-size: 12px; color: var(--ink-faint); margin-top: 14px; min-height: 16px; text-align: center; line-height: 1.6; }
+  #authStatus.err { color: var(--red); }
+  #authStatus.ok { color: var(--green); }
+  .auth-extra { text-align: center; margin-top: 4px; }
+  .auth-extra a { font-size: 12px; color: var(--cyan); text-decoration: none; cursor: pointer; }
+  .auth-extra a:hover { text-decoration: underline; }
+</style>
+</head>
+<body>
+<div class="auth-shell">
+  <div class="auth-card">
+    <span class="brand-mark brand-logo"><img src="data:image/jpeg;base64,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" alt="AP CNC DIY"></span>
+    <h1>DXF → G-CODE GENERATOR</h1>
+    <p class="sub">เข้าสู่ระบบเพื่อใช้งานโปรแกรม</p>
+
+    <div class="auth-tabs">
+      <button id="tabLogin" class="active">เข้าสู่ระบบ</button>
+      <button id="tabSignup">สมัครสมาชิกใหม่</button>
+    </div>
+
+    <form id="authForm">
+      <label class="fld" id="fldEmail"><span>อีเมล</span><input type="email" id="email" required></label>
+      <label class="fld" id="fldPassword"><span id="lblPassword">รหัสผ่าน</span><input type="password" id="password" required minlength="6"></label>
+      <label class="fld" id="fldPassword2" style="display:none"><span>ยืนยันรหัสผ่านใหม่</span><input type="password" id="password2" minlength="6"></label>
+      <button type="submit" id="btnSubmit" class="btn btn-accent">เข้าสู่ระบบ</button>
+    </form>
+
+    <p class="auth-extra" id="linkForgotWrap"><a id="linkForgot">ลืมรหัสผ่าน?</a></p>
+    <p class="auth-extra" id="linkBackWrap" style="display:none"><a id="linkBack">← กลับไปเข้าสู่ระบบ</a></p>
+
+    <div id="authStatus"></div>
+  </div>
+</div>
+
+<script src="config.js"></script>
+<script>
+  const sb = window.supabase.createClient(window.SUPABASE_URL, window.SUPABASE_ANON_KEY);
+  const params = new URLSearchParams(location.search);
+  const next = params.get('next') || 'index.html';
+  // Supabase ส่งกลับมาที่หน้านี้พร้อม #access_token=...&type=recovery ตอนผู้ใช้กดลิงก์เปลี่ยนรหัสผ่านในอีเมล
+  const isRecoveryLink = location.hash.includes('type=recovery');
+
+  let mode = 'login'; // 'login' | 'signup' | 'forgot' | 'reset'
+  const tabLogin = document.getElementById('tabLogin');
+  const tabSignup = document.getElementById('tabSignup');
+  const authTabs = document.querySelector('.auth-tabs');
+  const btnSubmit = document.getElementById('btnSubmit');
+  const statusEl = document.getElementById('authStatus');
+  const fldEmail = document.getElementById('fldEmail');
+  const fldPassword = document.getElementById('fldPassword');
+  const fldPassword2 = document.getElementById('fldPassword2');
+  const lblPassword = document.getElementById('lblPassword');
+  const emailInput = document.getElementById('email');
+  const passwordInput = document.getElementById('password');
+  const password2Input = document.getElementById('password2');
+  const linkForgotWrap = document.getElementById('linkForgotWrap');
+  const linkBackWrap = document.getElementById('linkBackWrap');
+
+  function setMode(m) {
+    mode = m;
+    tabLogin.classList.toggle('active', m === 'login');
+    tabSignup.classList.toggle('active', m === 'signup');
+    statusEl.textContent = ''; statusEl.className = '';
+
+    authTabs.style.display = (m === 'login' || m === 'signup') ? '' : 'none';
+    linkForgotWrap.style.display = (m === 'login') ? '' : 'none';
+    linkBackWrap.style.display = (m === 'forgot' || m === 'reset') ? '' : 'none';
+
+    fldEmail.style.display = (m === 'reset') ? 'none' : '';
+    emailInput.required = (m !== 'reset');
+
+    fldPassword.style.display = (m === 'forgot') ? 'none' : '';
+    passwordInput.required = (m !== 'forgot');
+    fldPassword2.style.display = (m === 'reset') ? '' : 'none';
+    password2Input.required = (m === 'reset');
+    lblPassword.textContent = (m === 'reset') ? 'รหัสผ่านใหม่' : 'รหัสผ่าน';
+
+    btnSubmit.textContent = {
+      login: 'เข้าสู่ระบบ', signup: 'สมัครสมาชิก',
+      forgot: 'ส่งลิงก์เปลี่ยนรหัสผ่าน', reset: 'บันทึกรหัสผ่านใหม่'
+    }[m];
+  }
+  tabLogin.addEventListener('click', () => setMode('login'));
+  tabSignup.addEventListener('click', () => setMode('signup'));
+  document.getElementById('linkForgot').addEventListener('click', (e) => { e.preventDefault(); setMode('forgot'); });
+  document.getElementById('linkBack').addEventListener('click', (e) => {
+    e.preventDefault();
+    if (isRecoveryLink) sb.auth.signOut(); // ตัด session ชั่วคราวจากลิงก์รีเซ็ต กันสับสนกับการ login จริง
+    setMode('login');
+  });
+
+  if (isRecoveryLink) {
+    // มาจากลิงก์เปลี่ยนรหัสผ่านในอีเมล — ห้ามเด้งเข้าโปรแกรมทันที ให้กรอกรหัสผ่านใหม่ก่อน
+    setMode('reset');
+  } else {
+    setMode('login');
+    // ถ้า login ค้างอยู่แล้ว (ไม่ใช่กรณีลิงก์รีเซ็ต) เด้งเข้าโปรแกรมทันที
+    sb.auth.getUser().then(({ data }) => { if (data && data.user) location.href = next; });
+  }
+
+  document.getElementById('authForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const email = emailInput.value.trim();
+    const password = passwordInput.value;
+    btnSubmit.disabled = true;
+    statusEl.textContent = 'กำลังดำเนินการ...'; statusEl.className = '';
+
+    try {
+      if (mode === 'signup') {
+        const redirectTo = location.origin + location.pathname; // ชี้กลับมาที่หน้านี้ตรง ๆ ไม่พึ่ง Site URL ของ dashboard
+        const { error } = await sb.auth.signUp({ email, password, options: { emailRedirectTo: redirectTo } });
+        if (error) throw error;
+        statusEl.textContent = 'สมัครสำเร็จ — กรุณาตรวจสอบอีเมลและกดลิงก์ยืนยันก่อนเข้าใช้งาน';
+        statusEl.className = 'ok';
+      } else if (mode === 'forgot') {
+        const redirectTo = location.origin + location.pathname;
+        const { error } = await sb.auth.resetPasswordForEmail(email, { redirectTo });
+        if (error) throw error;
+        statusEl.textContent = 'ส่งลิงก์เปลี่ยนรหัสผ่านไปที่อีเมลแล้ว — กรุณาตรวจสอบอีเมล (รวมถึงถังเมล Junk/Spam)';
+        statusEl.className = 'ok';
+      } else if (mode === 'reset') {
+        if (password !== password2Input.value) throw new Error('รหัสผ่านใหม่ทั้งสองช่องไม่ตรงกัน');
+        const { error } = await sb.auth.updateUser({ password });
+        if (error) throw error;
+        await sb.auth.signOut(); // บังคับ login ใหม่ด้วยรหัสผ่านใหม่ ตัด session ชั่วคราวจากลิงก์ทิ้ง
+        statusEl.textContent = 'เปลี่ยนรหัสผ่านสำเร็จ — กรุณาเข้าสู่ระบบด้วยรหัสผ่านใหม่';
+        statusEl.className = 'ok';
+        history.replaceState(null, '', location.pathname + location.search); // ล้าง #access_token ออกจาก URL
+        setTimeout(() => setMode('login'), 800);
+      } else {
+        const { error } = await sb.auth.signInWithPassword({ email, password });
+        if (error) throw error;
+        statusEl.textContent = 'เข้าสู่ระบบสำเร็จ กำลังพาไปยังโปรแกรม...';
+        statusEl.className = 'ok';
+        setTimeout(() => { location.href = next; }, 500);
+      }
+    } catch (err) {
+      statusEl.textContent = 'เกิดข้อผิดพลาด: ' + (err.message || 'ไม่สำเร็จ');
+      statusEl.className = 'err';
+    } finally {
+      btnSubmit.disabled = false;
+    }
+  });
+</script>
+</body>
+</html>
