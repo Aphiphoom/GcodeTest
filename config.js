@@ -1,0 +1,1 @@
+window.SUPABASE_URL="https://modbgnzikhrdvrcxnzqy.supabase.co",window.SUPABASE_ANON_KEY="sb_publishable_55FVfkHoyMRlmiAkTjt5LQ_IbqajFqr";
