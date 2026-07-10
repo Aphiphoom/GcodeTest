@@ -1,1 +1,1280 @@
-!function(e){"use strict";const t=32,n=500/30;let o,i,a,r,l,s,u,d,c,f,h,m,p,v,y,E,g,x,T,w,R,M,H,b,P,D=!0,S=null,C=null,F=[],k=!1,U=null,W=null,L=null,A=null,B=null,G=[],z=0,V=!1,I=3,K=0,q=null,X=!1,Y=null,_=null,J=!1,N=0;const Z={theta:.25*Math.PI,phi:.32*Math.PI,radius:400,target:new THREE.Vector3(0,0,0)};function O(e,t,n){return Math.max(t,Math.min(n,e))}function j(){if(!u||!o)return;const e=u.clientWidth,t=u.clientHeight;e&&t&&(o.setSize(e,t,!1),a.aspect=e/t,a.updateProjectionMatrix())}function Q(){const e=Z;a.position.set(e.target.x+e.radius*Math.sin(e.phi)*Math.sin(e.theta),e.target.y+e.radius*Math.cos(e.phi),e.target.z+e.radius*Math.sin(e.phi)*Math.cos(e.theta)),a.lookAt(e.target)}function $(e){requestAnimationFrame($),V&&function(e){if(!G.length)return void(V=!1);K||(K=e);const t=e-K;K=e;const n=Math.max(1,Math.round(I*t*.1)),o=Math.min(z+n,G.length),i=xe(G.slice(z,o));z=o,i&&ge(i);Re(),ie(),ye(),z>=G.length&&(V=!1)}(e),function(){if(!Pe)return;const e=Math.max(R||1,M||1)*Me,t=Z.radius<e;t!==be<e&&(t?function(e,t){He&&(i.remove(He),He.traverse(e=>{e.geometry&&e.geometry.dispose(),e.material&&e.material.dispose()}));if(He=new THREE.Group,i.add(He),!e||!e.operations)return;const n="table"===t.z0Mode&&parseFloat(t.woodThickness)||0;e.operations.forEach(e=>{const o=e.tool;if(!o)return;const i=(o.diameter||6)/2,a="vbit"===o.toolType,r=a?(parseFloat(o.vbitAngle)||90)*Math.PI/180:0,l=new THREE.MeshStandardMaterial({color:9109504,roughness:.7,metalness:.1,transparent:!0,opacity:.82});if("drill"===e.kind){const o=e.passes&&e.passes.length?e.passes:[e.targetZ],s=o[o.length-1]+n,u=Math.abs((parseFloat(t.woodThickness)||18)-s);if(u<.01)return;if(a){const t=u/Math.tan(r/2),o=new THREE.ConeGeometry(t,u,24,1,!0),i=new THREE.Mesh(o,l.clone());i.position.set(e.point.x-ue(),n-u/2,-(e.point.y-de())),He.add(i)}else{const t=new THREE.CylinderGeometry(i,i,u,24,1,!0),o=new THREE.Mesh(t,l.clone());o.position.set(e.point.x-ue(),n-u/2,-(e.point.y-de())),He.add(o)}}else if("contour"===e.kind&&e.path&&e.path.length>=2){const o=e.passes&&e.passes.length?e.passes:[e.targetZ],s=o[o.length-1]+n,u=Math.abs((parseFloat(t.woodThickness)||18)-s);if(u<.01)return;for(let t=0;t<e.path.length-1;t++){const o=e.path[t],s=e.path[t+1],d=Math.hypot(s.x-o.x,s.y-o.y);if(d<.01)continue;const c=n,f=c-u,h=(o.x+s.x)/2-ue(),m=-((o.y+s.y)/2-de()),p=Math.atan2(s.y-o.y,s.x-o.x);if(a){const e=u/Math.tan(r/2),t=new THREE.CylinderGeometry(e,0,u,8,1,!0),n=new THREE.Mesh(t,l.clone());n.position.set(h,(c+f)/2,m),n.rotation.y=-p,n.scale.set(1,1,d/(2*e||1)),He.add(n)}else{const e=new THREE.CylinderGeometry(i,i,u,8,1,!0),t=new THREE.Mesh(e,l.clone());t.position.set(h,(c+f)/2,m),t.rotation.y=-p,t.scale.set(1,1,d/(2*i||1)),He.add(t)}}}})}(Pe.lastJob,Pe.machine):He&&(i.remove(He),He=null));be=Z.radius}(),o&&o.render(i,a)}function ee(e){return new THREE.Vector2(e.x-ue(),e.y-de())}function te(){S&&(r.remove(S),S.geometry.dispose(),S.material.dispose());const e=new THREE.Shape(U.map(ee));let t;F.forEach(t=>{!t||t.length<3||e.holes.push(new THREE.Path(t.map(ee)))});try{t=new THREE.ExtrudeGeometry(e,{depth:P,bevelEnabled:!1,curveSegments:12})}catch(n){const o=e.holes.slice();for(;o.length&&!t;){o.pop();const e=new THREE.Shape(U.map(ee));e.holes=o;try{t=new THREE.ExtrudeGeometry(e,{depth:P,bevelEnabled:!1,curveSegments:12})}catch(e){}}t||(t=new THREE.ExtrudeGeometry(new THREE.Shape(U.map(ee)),{depth:P,bevelEnabled:!1}))}t.rotateX(-Math.PI/2),t.computeVertexNormals();const n=new THREE.ShaderMaterial({uniforms:{uWoodTex:{value:W},uBaseThickness:{value:P},uKeyDir:{value:new THREE.Vector3(.45,1,.55)},uFillDir:{value:new THREE.Vector3(-.5,.4,-.3)}},vertexShader:"varying vec3 vWorldPos;\nvarying vec3 vN;\nvoid main(){\n  vWorldPos = position;\n  vN = normalMatrix * normal;\n  gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);\n}",fragmentShader:"precision highp float;\nvarying vec3 vWorldPos;\nvarying vec3 vN;\nuniform sampler2D uWoodTex;\nuniform float uBaseThickness;\nuniform vec3 uKeyDir;\nuniform vec3 uFillDir;\nvoid main(){\n  if (vWorldPos.y > uBaseThickness - 0.05) discard;\n  vec3 n = normalize(vN);\n  float diff = max(dot(n, normalize(uKeyDir)), 0.0) * 0.85 + max(dot(n, normalize(uFillDir)), 0.0) * 0.3 + 0.22;\n  vec2 uv = vWorldPos.xz * 0.0035;\n  vec3 base = texture2D(uWoodTex, uv).rgb;\n  vec3 color = base * diff;\n  gl_FragColor = vec4(color, 1.0);\n}",side:THREE.DoubleSide});S=new THREE.Mesh(t,n),r.add(S),function(){const e=A,t=L.width;e.fillStyle="#ffffff",e.fillRect(0,0,t,t),e.fillStyle="#000000",F.forEach(n=>{!n||n.length<3||(e.beginPath(),n.forEach((n,o)=>{const i=(n.x-H)/R,a=(n.y-b)/M,r=i*t,l=a*t;0===o?e.moveTo(r,l):e.lineTo(r,l)}),e.closePath(),e.fill())}),B.needsUpdate=!0}(),k=!1}let ne=0;const oe=300;function ie(e){if(!k)return;const t=Date.now();!e&&t-ne<oe||(te(),ne=t)}function ae(e,t){return new THREE.WebGLRenderTarget(e,t,{type:THREE.FloatType,format:THREE.RGBAFormat,minFilter:THREE.LinearFilter,magFilter:THREE.LinearFilter,depthBuffer:!1,stencilBuffer:!1})}function re(e){x.uniforms.uValue.value=e,o.setRenderTarget(c),o.render(y,E),o.setRenderTarget(null)}function le(e){const n=Math.min(e.length,t);v.uniforms.uPrev.value=c.texture,v.uniforms.uBoundsMin.value.set(H,b),v.uniforms.uBoundsSize.value.set(R,M),v.uniforms.uCount.value=n;const i=v.uniforms.uPos.value,a=v.uniforms.uRadius.value,r=v.uniforms.uHeight.value,l=v.uniforms.uType.value,s=v.uniforms.uParam.value;for(let t=0;t<n;t++){const n=e[t];i[t].set(n.x,n.y),a[t]=n.r,r[t]=n.h,l[t]=n.profileType,s[t]=n.profileParam}o.setRenderTarget(f),o.render(h,m),o.setRenderTarget(null);const u=c;c=f,f=u}function se(e,t,n,o,i){let a,r;e>=t?(a=n,r=Math.max(o,Math.round(n*t/e))):(r=n,a=Math.max(o,Math.round(n*e/t))),i(a,r)}function ue(){return H+R/2}function de(){return b+M/2}function ce(e){const t=64,n=new Float32Array(4096);let o=e||1;const i=()=>(o=(9301*o+49297)%233280,o/233280);for(let e=0;e<n.length;e++)n[e]=i();function a(e,o){return e=(e%t+t)%t,o=(o%t+t)%t,n[Math.floor(o)*t+Math.floor(e)]}return function(e,t){const n=e-Math.floor(e),o=t-Math.floor(t),i=Math.floor(e),r=Math.floor(t),l=n*n*(3-2*n),s=o*o*(3-2*o);return a(i,r)*(1-l)*(1-s)+a(i+1,r)*l*(1-s)+a(i,r+1)*(1-l)*s+a(i+1,r+1)*l*s}}function fe(e,t){return"table"===t.z0Mode?e:P+e}function he(){G.length&&!J&&(z>=G.length?Te(0,()=>{V=!0,K=0,ye()}):(V=!0,K=0,ye()))}function me(){V=!1,ye()}function pe(e){I=O(e,.1,30)}function ve(e){q=e}function ye(){q&&q(z,G.length)}function Ee(e){J=e,ye()}function ge(e){const t=e.tool?e.tool.number:void 0;Y!==t&&(!function(e){s&&(r.remove(s),s.traverse(e=>{e.geometry&&e.geometry.dispose(),e.material&&e.material.dispose()}));const t=e&&e.diameter||6,n=new THREE.MeshStandardMaterial({color:10135476,metalness:.65,roughness:.3}),o=Math.max(2.5*P,40),i=new THREE.Group,a=new THREE.Mesh(new THREE.CylinderGeometry(t/2,t/2,o,16),n);if(a.position.y=o/2,i.add(a),e&&"vbit"===e.toolType){const o=(e.vbitAngle||90)*Math.PI/180,a=t/2/Math.tan(o/2),r=new THREE.Mesh(new THREE.ConeGeometry(t/2,a,16),n);r.position.y=-a/2,i.add(r)}s=i,r.add(s)}(e.tool),Y=t),function(e){if(!s)return;s.visible=!0,s.position.set(e.x-ue(),e.h,-(e.y-de()))}(e)}function xe(e){let n=null,o=0;for(;o<e.length;)if("hole"===e[o].type)F.push.apply(F,e[o].polygons),k=!0,n=e[o],o++;else if("travel"===e[o].type)n=e[o],o++;else{let i=o;const a=[];for(;i<e.length&&"hole"!==e[i].type&&"travel"!==e[i].type&&a.length<t;)a.push(e[i]),i++;a.length&&le(a),n=a[a.length-1]||n,o=i}return n}function Te(e,t){if(!G.length)return z=0,ye(),void(t&&t());const n=Math.round(O(e,0,1)*G.length);N++;const o=N;function i(){o===N&&(z=n,n>0?ge(G[n-1]):s&&(s.visible=!1),Re(),ie(!0),Ee(!1),K=0,t&&t())}Ee(!0),n<z?(re(P),Y=null,F=[],k=!0,z=0,we(0,n,o,i)):n>z?we(z,n,o,i):i()}function we(e,t,n,o){let i=e;!function e(){if(n!==N)return;const a=Math.min(i+192,t);xe(G.slice(i,a)),i=a,z=i,Re(),ie(),ye(),i<t?requestAnimationFrame(e):o()}()}function Re(){l&&(l.material.uniforms.uHeightTex.value=c.texture)}const Me=.4;let He=null,be=1/0,Pe=null;e.Simulate3D={init:function(e){if(o&&u===e)return;u=e,e.innerHTML="",o=new THREE.WebGLRenderer({antialias:!0}),D=!(!o.capabilities||!o.capabilities.isWebGL2),o.setPixelRatio(Math.min(window.devicePixelRatio||1,2)),o.domElement.style.display="block",o.domElement.style.width="100%",o.domElement.style.height="100%",e.appendChild(o.domElement),i=new THREE.Scene,i.background=new THREE.Color(1119773),a=new THREE.PerspectiveCamera(45,1,.1,8e3),r=new THREE.Group,i.add(r),i.add(new THREE.AmbientLight(16777215,.55));const n=new THREE.DirectionalLight(16777215,.9);n.position.set(180,320,220),i.add(n);const l=new THREE.DirectionalLight(16777215,.25);l.position.set(-200,150,-150),i.add(l),L=document.createElement("canvas"),L.width=512,L.height=512,A=L.getContext("2d"),B=new THREE.CanvasTexture(L),function(e){d=document.createElement("div"),d.className="sim3d-bar",d.innerHTML='<button class="mini" id="sim3dPlay" title="เล่น/หยุด">▶</button><input type="range" id="sim3dSeek" class="sim3d-seek" min="0" max="1000" value="1000"><span class="sim3d-label" id="sim3dStatus">ความเร็ว</span><input type="range" id="sim3dSpeed" class="sim3d-speed" min="1" max="12" value="3"><button class="mini" id="sim3dReset" title="เริ่มใหม่จากแผ่นไม้เปล่า">⟲</button>',e.appendChild(d);const t=d.querySelector("#sim3dPlay"),n=d.querySelector("#sim3dSeek"),o=d.querySelector("#sim3dSpeed"),i=d.querySelector("#sim3dReset"),a=d.querySelector("#sim3dStatus");t.addEventListener("click",()=>{V?me():he()}),o.addEventListener("input",()=>pe(parseFloat(o.value))),i.addEventListener("click",()=>{me(),Te(0)}),n.addEventListener("mousedown",()=>{X=!0}),window.addEventListener("mouseup",()=>{X=!1}),n.addEventListener("input",()=>{me(),Te(parseFloat(n.value)/1e3)}),ve((e,o)=>{t.textContent=V?"⏸":"▶",t.disabled=J,a.textContent=J?"กำลังประมวลผล…":"ความเร็ว",X||(n.value=o?Math.round(e/o*1e3):0)})}(e),D?(!function(e){let t=!1,n=!1,o={x:0,y:0};e.addEventListener("mousedown",e=>{e.target.closest&&e.target.closest(".sim3d-bar")||(t=0===e.button&&!e.shiftKey,n=2===e.button||0===e.button&&e.shiftKey,o={x:e.clientX,y:e.clientY})}),window.addEventListener("mouseup",()=>{t=!1,n=!1}),window.addEventListener("mousemove",e=>{if(!t&&!n)return;const i=e.clientX-o.x,a=e.clientY-o.y;if(o={x:e.clientX,y:e.clientY},t)Z.theta-=.006*i,Z.phi=O(Z.phi-.006*a,.08,.49*Math.PI),Q();else if(n){const e=.0015*Z.radius,t=new THREE.Vector3(Math.cos(Z.theta),0,-Math.sin(Z.theta));Z.target.addScaledVector(t,-i*e),Z.target.y+=a*e,Q()}}),e.addEventListener("contextmenu",e=>e.preventDefault()),e.addEventListener("wheel",e=>{e.preventDefault(),Z.radius=O(Z.radius*(1+.08*Math.sign(e.deltaY)),20,6e3),Q()},{passive:!1})}(e),h=new THREE.Scene,m=new THREE.OrthographicCamera(-1,1,1,-1,0,1),v=new THREE.ShaderMaterial({uniforms:{uPrev:{value:null},uBoundsMin:{value:new THREE.Vector2(0,0)},uBoundsSize:{value:new THREE.Vector2(1,1)},uCount:{value:0},uPos:{value:new Array(t).fill(0).map(()=>new THREE.Vector2(0,0))},uRadius:{value:new Float32Array(t)},uHeight:{value:new Float32Array(t)},uType:{value:new Float32Array(t)},uParam:{value:new Float32Array(t)}},vertexShader:"varying vec2 vUv;\nvoid main(){ vUv = uv; gl_Position = vec4(position.xy, 0.0, 1.0); }",fragmentShader:"precision highp float;\nuniform sampler2D uPrev;\nuniform vec2 uBoundsMin;\nuniform vec2 uBoundsSize;\nuniform int uCount;\nuniform vec2 uPos[32];\nuniform float uRadius[32];\nuniform float uHeight[32];\nuniform float uType[32];\nuniform float uParam[32];\nvarying vec2 vUv;\nvoid main(){\n  float h = texture2D(uPrev, vUv).r;\n  vec2 world = uBoundsMin + vUv * uBoundsSize;\n  for (int i = 0; i < 32; i++) {\n    if (i >= uCount) break;\n    float d = distance(world, uPos[i]);\n    if (d <= uRadius[i]) {\n      float cand;\n      if (uType[i] < 0.5) { cand = uHeight[i]; }\n      else if (uType[i] < 1.5) { cand = uHeight[i] + d * uParam[i]; }\n      else { float R = uParam[i]; float dd = min(d, R); cand = uHeight[i] + R - sqrt(max(R*R - dd*dd, 0.0)); }\n      h = min(h, cand);\n    }\n  }\n  gl_FragColor = vec4(h, 0.0, 0.0, 1.0);\n}"}),p=new THREE.Mesh(new THREE.PlaneGeometry(2,2),v),h.add(p),y=new THREE.Scene,E=new THREE.OrthographicCamera(-1,1,1,-1,0,1),x=new THREE.ShaderMaterial({uniforms:{uValue:{value:18}},vertexShader:"void main(){ gl_Position = vec4(position.xy, 0.0, 1.0); }",fragmentShader:"precision highp float;\nuniform float uValue;\nvoid main(){ gl_FragColor = vec4(uValue,0.0,0.0,1.0); }"}),g=new THREE.Mesh(new THREE.PlaneGeometry(2,2),x),y.add(g),_=new(window.ResizeObserver||function(){this.observe=function(){}})(()=>j()),_.observe(e),window.addEventListener("resize",j),requestAnimationFrame($),j()):function(e){if(!d)return;const t=document.createElement("div");t.className="sim3d-msg",t.textContent=e,d.parentElement.insertBefore(t,d)}("เบราว์เซอร์/GPU นี้ไม่รองรับ WebGL2 — โหมดพรีวิว 3 มิติความละเอียดสูงใช้งานไม่ได้ในเครื่องนี้")},loadJob:function(t,a){if(!o||!D)return;He&&(i.remove(He),He=null),be=1/0,Pe=null;const s=t.dxf.bounds;let u,d;R=Math.max(s.width,1),M=Math.max(s.height,1),H=s.minX,b=s.minY,P=parseFloat(a.woodThickness)||18,W&&W.dispose(),W=function(){const e=512,t=document.createElement("canvas");t.width=e,t.height=e;const n=t.getContext("2d"),o=n.createImageData(e,e),i=ce(11),a=ce(37),r=ce(91),l=[168,122,74],s=[222,178,124];for(let t=0;t<e;t++)for(let n=0;n<e;n++){const u=n/e,d=t/e;let c=0,f=0;[{fx:18,fy:2.2,noise:i,w:.55},{fx:46,fy:5,noise:a,w:.3},{fx:130,fy:14,noise:r,w:.15}].forEach(e=>{c+=e.noise(u*e.fx,d*e.fy)*e.w,f+=e.w}),c/=f;const h=r(220*u+50,220*d+50);c=.85*c+.15*h;const m=Math.max(0,Math.min(1,c)),p=4*(t*e+n);o.data[p]=l[0]+(s[0]-l[0])*m,o.data[p+1]=l[1]+(s[1]-l[1])*m,o.data[p+2]=l[2]+(s[2]-l[2])*m,o.data[p+3]=255}n.putImageData(o,0,0);const u=new THREE.CanvasTexture(t);return u.wrapS=u.wrapT=THREE.RepeatWrapping,u}(),U=[{x:H,y:b},{x:H+R,y:b},{x:H+R,y:b+M},{x:H,y:b+M}],F=[],k=!0,se(R,M,1280,64,(e,t)=>{T=e,w=t}),c&&c.dispose(),f&&f.dispose(),c=ae(T,w),f=ae(T,w),se(R,M,560,24,(e,t)=>{u=e,d=t}),function(e,t){l&&(r.remove(l),l.geometry.dispose(),l.material.dispose());const n=new Float32Array(e*t*3),o=new Float32Array(e*t*2);for(let i=0;i<t;i++)for(let a=0;a<e;a++){const r=i*e+a,l=a/(e-1),s=i/(t-1);n[3*r]=H+l*R-ue(),n[3*r+1]=0,n[3*r+2]=-(b+s*M-de()),o[2*r]=l,o[2*r+1]=s}const i=new Uint32Array((e-1)*(t-1)*6);let a=0;for(let n=0;n<t-1;n++)for(let t=0;t<e-1;t++){const o=n*e+t,r=n*e+t+1,l=(n+1)*e+t,s=(n+1)*e+t+1;i[a++]=o,i[a++]=l,i[a++]=r,i[a++]=r,i[a++]=l,i[a++]=s}const s=new THREE.BufferGeometry;s.setIndex(new THREE.BufferAttribute(i,1)),s.setAttribute("position",new THREE.BufferAttribute(n,3)),s.setAttribute("uv",new THREE.BufferAttribute(o,2));const u=new THREE.ShaderMaterial({uniforms:{uHeightTex:{value:null},uWoodTex:{value:W},uHoleMask:{value:B},uTexel:{value:new THREE.Vector2(1/T,1/w)},uCellWorldX:{value:R/T},uCellWorldY:{value:M/w},uBaseThickness:{value:P},uKeyDir:{value:new THREE.Vector3(.45,1,.55)},uFillDir:{value:new THREE.Vector3(-.5,.4,-.3)},uRimDir:{value:new THREE.Vector3(0,.25,-1)}},vertexShader:"varying vec2 vUv;\nvarying vec3 vWorldPos;\nuniform sampler2D uHeightTex;\nuniform vec2 uTexel;\nvoid main(){\n  vUv = uv;\n  float h = 0.0;\n  for (int dx = -1; dx <= 1; dx++) {\n    for (int dy = -1; dy <= 1; dy++) {\n      h += texture2D(uHeightTex, uv + vec2(float(dx), float(dy)) * uTexel).r;\n    }\n  }\n  h /= 9.0;\n  vec3 pos = position;\n  pos.y = h;\n  vWorldPos = (modelMatrix * vec4(pos, 1.0)).xyz;\n  gl_Position = projectionMatrix * modelViewMatrix * vec4(pos, 1.0);\n}",fragmentShader:"precision highp float;\nvarying vec2 vUv;\nvarying vec3 vWorldPos;\nuniform sampler2D uHeightTex;\nuniform sampler2D uWoodTex;\nuniform sampler2D uHoleMask;\nuniform vec2 uTexel;\nuniform float uCellWorldX;\nuniform float uCellWorldY;\nuniform float uBaseThickness;\nuniform vec3 uKeyDir;\nuniform vec3 uFillDir;\nuniform vec3 uRimDir;\nvoid main(){\n  if (texture2D(uHoleMask, vUv).r < 0.5) { discard; }\n  float hC = texture2D(uHeightTex, vUv).r;\n  if (hC <= 0.02) { discard; }\n  float hL = texture2D(uHeightTex, vUv - vec2(uTexel.x, 0.0)).r;\n  float hR = texture2D(uHeightTex, vUv + vec2(uTexel.x, 0.0)).r;\n  float hD = texture2D(uHeightTex, vUv - vec2(0.0, uTexel.y)).r;\n  float hU = texture2D(uHeightTex, vUv + vec2(0.0, uTexel.y)).r;\n  vec3 n = normalize(vec3((hL - hR) / (2.0*uCellWorldX), 1.0, (hD - hU) / (2.0*uCellWorldY)));\n  float edgeDist = min(min(vUv.x, 1.0 - vUv.x), min(vUv.y, 1.0 - vUv.y));\n  float edgeBevel = 1.0 - smoothstep(0.0, 0.006, edgeDist);\n  vec2 edgeDir = vec2(step(vUv.x, 0.5) - step(0.5, vUv.x), step(vUv.y, 0.5) - step(0.5, vUv.y));\n  n = normalize(n + vec3(edgeDir.x, 0.0, edgeDir.y) * edgeBevel * 0.6);\n  float diffKey = max(dot(n, normalize(uKeyDir)), 0.0);\n  float diffFill = max(dot(n, normalize(uFillDir)), 0.0);\n  float diffRim = max(dot(n, normalize(uRimDir)), 0.0);\n  vec3 viewDir = normalize(cameraPosition - vWorldPos);\n  vec3 halfVec = normalize(normalize(uKeyDir) + viewDir);\n  float spec = pow(max(dot(n, halfVec), 0.0), 28.0) * 0.18;\n  float curvature = hL + hR + hD + hU - 4.0 * hC;\n  float ao = 1.0 - clamp(-curvature * 1.6, 0.0, 0.55);\n  float cutAmount = clamp((uBaseThickness - hC) * 0.4, 0.0, 1.0);\n  vec3 freshWood = vec3(0.92, 0.78, 0.56);\n  vec3 base = texture2D(uWoodTex, vUv * 10.0).rgb;\n  float lumaL = dot(texture2D(uWoodTex, (vUv - vec2(0.003, 0.0)) * 10.0).rgb, vec3(0.299,0.587,0.114));\n  float lumaR = dot(texture2D(uWoodTex, (vUv + vec2(0.003, 0.0)) * 10.0).rgb, vec3(0.299,0.587,0.114));\n  float grainTilt = (lumaL - lumaR) * 0.4;\n  float diff = diffKey + diffFill * 0.35 + diffRim * 0.18 + grainTilt;\n  vec3 color = mix(base, freshWood, cutAmount * 0.45) * (0.28 + 0.95 * max(diff, 0.0)) * ao + spec;\n  color *= mix(0.55, 1.0, 1.0 - edgeBevel * 0.7);\n  color = color / (1.0 + color * 0.25);\n  gl_FragColor = vec4(color, 1.0);\n}",side:THREE.DoubleSide});l=new THREE.Mesh(s,u),r.add(l)}(u,d),function(){C&&(r.remove(C),C.geometry.dispose(),C.material.dispose());const e=new THREE.PlaneGeometry(1.05*R,1.05*M);e.rotateX(-Math.PI/2);const t=new THREE.MeshStandardMaterial({color:2763312,roughness:.95,metalness:0,side:THREE.DoubleSide});C=new THREE.Mesh(e,t),C.position.y=-.5,r.add(C)}(),te(),function(t,o){G=[];const i=e.GCodeGenerator;let a;if(i&&"function"==typeof i.orderOperations){const e=i.orderOperations(t||[],o);a=[],e.forEach(e=>{a.push.apply(a,e.ops)})}else a=(t||[]).slice().sort((e,t)=>(e.order||0)-(t.order||0));const r=1.2*Math.max(R/T,M/w);let l=null;function s(e,t,o,i,a,r){const l=Math.hypot(o-e,i-t);if(l<n)return void G.push({type:"travel",x:o,y:i,h:a,tool:r});const s=Math.ceil(l/n);for(let n=1;n<=s;n++){const l=n/s;G.push({type:"travel",x:e+(o-e)*l,y:t+(i-t)*l,h:a,tool:r})}}a.forEach(e=>{const t=e.tool,n=P+(parseFloat(o.rapidClearance)||3);let i,a;if("drill"===e.kind?(i=e.point.x,a=e.point.y):"pocket"===e.kind&&e.rings&&e.rings[0]&&e.rings[0][0]?(i=e.rings[0][0].x,a=e.rings[0][0].y):e.path&&e.path[0]&&(i=e.path[0].x,a=e.path[0].y),l&&void 0!==i&&s(l.x,l.y,i,a,n,t),function(e,t){return"drill"===e.kind&&function(e,t){const n=e.passes&&e.passes.length?e.passes:[e.targetZ],o=fe(n[n.length-1],t);return o<=.15}(e,t)}(e,o)){const n=function(e){const t=(e.tool&&e.tool.diameter?e.tool.diameter:6)/2,n=24,o=[];for(let i=0;i<n;i++){const a=i/n*Math.PI*2;o.push({x:e.point.x+Math.cos(a)*t,y:e.point.y+Math.sin(a)*t})}return[o]}(e),o="drill"===e.kind?e.point:e.path[e.path.length-1]||{x:H,y:b};return n.length&&G.push({type:"hole",polygons:n,x:o.x,y:o.y,h:0,tool:t}),void(l={x:o.x,y:o.y})}const u=(t&&t.diameter?t.diameter:6)/2,d=function(e){if(!e)return{profileType:0,profileParam:0};if("vbit"===e.toolType){const t=(parseFloat(e.vbitAngle)||90)*Math.PI/180;return{profileType:1,profileParam:1/Math.tan(t/2)}}if("ballnose"===e.toolType)return{profileType:2,profileParam:(e.diameter||6)/2};return{profileType:0,profileParam:0}}(t);if("drill"===e.kind){return(e.passes&&e.passes.length?e.passes:[e.targetZ]).map(e=>fe(e,o)).forEach(n=>G.push({type:"stamp",x:e.point.x,y:e.point.y,r:u,h:n,profileType:d.profileType,profileParam:d.profileParam,tool:t})),void(l={x:e.point.x,y:e.point.y})}const c="pocket"===e.kind?e.rings||[]:[e.path],f="contour"===e.kind&&e.tabs?e.tabs:[],h="contour"===e.kind&&void 0!==e.tabTopZ?fe(e.tabTopZ,o):null,m=e.passes&&e.passes.length?e.passes:[e.targetZ];c.forEach(e=>{if(!e||e.length<2)return;const n=function(e,t){const n=[{x:e[0].x,y:e[0].y,dist:0}];let o=0;for(let i=0;i<e.length-1;i++){const a=e[i],r=e[i+1],l=Math.hypot(r.x-a.x,r.y-a.y);if(l<1e-9)continue;let s=0;for(;s+t<l;){s+=t;const e=s/l;n.push({x:a.x+(r.x-a.x)*e,y:a.y+(r.y-a.y)*e,dist:o+s})}o+=l,n.push({x:r.x,y:r.y,dist:o})}return n}(e,r);m.forEach(e=>{const i=fe(e,o);n.forEach(e=>{let n=i;if(f.length&&null!==h){f.some(t=>e.dist>=t.start&&e.dist<=t.end)&&(n=Math.max(i,h))}G.push({type:"stamp",x:e.x,y:e.y,r:u,h:n,profileType:d.profileType,profileParam:d.profileParam,tool:t})})}),e.length>0&&(l={x:e[e.length-1].x,y:e[e.length-1].y})})})}(t.lastJob?t.lastJob.operations:[],a),Pe=t.lastJob?{lastJob:t.lastJob,machine:a}:null,z=0,Y=null,me(),re(P),function(){const e=Math.max(R,M,3*P);Z.target.set(0,P/2,0),Z.radius=1.25*e,Z.theta=0,Z.phi=.32*Math.PI,Q()}(),Te(1)},play:he,pause:me,setSpeed:pe,seekTo:Te,setProgressCallback:ve,dispose:function(){V=!1}}}("undefined"!=typeof window?window:globalThis);
+/* =============================================================================
+ * simulate-3d.js (v2 — GPU heightmap)
+ * -----------------------------------------------------------------------------
+ * พรีวิวผลการตัด 3 มิติ — เวอร์ชัน GPU-based heightmap
+ *   - ความสูงของผิวไม้เก็บเป็น "texture" บน GPU (ไม่ใช่ Float32Array บน CPU แบบเดิม)
+ *     จึงทำความละเอียดสูงมากได้ (ดีฟอลต์ 1024 จุด/ด้านยาว) โดยไม่หน่วง
+ *   - การ "กัด" แต่ละจุดบน toolpath = วาด full-screen pass (ping-pong ระหว่าง
+ *     RenderTarget สองตัว) คำนวณความสูงใหม่ตามรูปทรงเครื่องมือจริง (flat/V-bit/
+ *     ball-nose) แล้ว min() กับค่าเดิม — ทำเป็นชุด (batch) ต่อ pass เพื่อลดจำนวน
+ *     draw call
+ *   - mesh ของแผ่นไม้ใช้ความละเอียดปานกลางคงที่ (silhouette เท่านั้น) แล้วให้
+ *     vertex shader ไปอ่านความสูงจริงจาก texture มา displace ตำแหน่งจุด — ทำให้
+ *     เห็นรายละเอียด/ความเอียงของดอกกัดคมชัดแม้ mesh จะไม่ละเอียดมาก
+ *
+ * ข้อจำกัดที่ทราบอยู่แล้ว (ตามที่ตกลงไว้ก่อนเริ่มเขียน):
+ *   - ต้องการ WebGL2 (เบราว์เซอร์ใหม่ ๆ รองรับเกือบทั้งหมด) — ถ้าไม่รองรับจะแจ้ง
+ *     เตือนในแถบควบคุมแทนการ throw error เงียบ ๆ
+ *   - toolType ที่มีในระบบตอนนี้คือ endmill/vbit/formtool เท่านั้น (ไม่มี ballnose
+ *     ในข้อมูลจริง) shader รองรับโค้ด ballnose ไว้เผื่ออนาคต แต่ยังไม่มีทางเลือกนี้
+ *     ในหน้า Tool Library ปัจจุบัน — formtool ยังคงเป็น flat (ค่าประมาณเดิม)
+ *   - seekTo() แบบย้อนกลับ (ไปจุดที่ตื้นกว่าจุดปัจจุบัน) ต้อง clear + กัดใหม่ทั้งหมด
+ *     ตั้งแต่ต้น อาจหน่วงเล็กน้อยถ้าไฟล์มี action จำนวนมาก (ทำงานครั้งเดียวตอน seek
+ *     ไม่ใช่ทุกเฟรม)
+ * ========================================================================== */
+
+(function (global) {
+  'use strict';
+
+  const TEX_LONG_SIDE = 1280;  // ความละเอียด height texture (ด้านที่ยาวกว่า)
+  const TEX_MIN_SIDE = 64;
+  // ความละเอียด mesh จริง — สำคัญกว่า TEX_LONG_SIDE ในการ "เห็นร่องคมชัด" เพราะ
+  // ตำแหน่งจุดจริงในอวกาศ 3D ถูกจำกัดความละเอียดที่นี่ (texture ละเอียดแค่ไหนก็ตาม
+  // แต่ถ้า mesh ห่างกว่าร่องที่กัด ร่องนั้นจะถูกปาดเฉลี่ยจนดูเบลออยู่ดี)
+  const MESH_LONG_SIDE = 560;
+  const MESH_MIN_SIDE = 24;
+  const BATCH = 32;            // จำนวน stamp ต่อ ping-pong pass
+  const RAPID_FEED = 30000;    // ความเร็ว G0 (mm/min) ที่ใช้ในการจำลองการเคลื่อนที่ rapid ของ tool
+                               // ใช้คำนวณจำนวน waypoint ระหว่าง operation (ไม่ได้กัดไม้ แค่ขยับ tool)
+  const TRAVEL_STEP = RAPID_FEED / 60 / 30; // ระยะห่างระหว่าง waypoint (mm) ที่ 30fps ≈ 16.7mm/waypoint
+
+  let renderer, scene, camera, group, mesh, toolMesh;
+  let containerEl, controlsEl;
+  let webgl2ok = true;
+
+  // ----- Solid geometry: แผ่นไม้จริง (ExtrudeGeometry) + รูที่ทะลุ (drill/profile ไม่มี tab) -----
+  let slabMesh = null;
+  let tableMesh = null;     // พื้นโต๊ะตัด (ระนาบใต้แผ่นไม้) — ให้เห็น "ทะลุถึงพื้น" เวลาตัดขาด แทนรูดำโบ๋
+  let revealedHoles = [];   // [[{x,y}...], ...] รายการ polygon ของรูที่ "เผยออกมาแล้ว" ตาม progress
+  let slabDirty = false;
+  let boardOutline = null;  // [{x,y}x4] กรอบสี่เหลี่ยมของแผ่นไม้เต็ม (จาก bounds)
+  let sharedWoodTex = null; // texture ไม้ใช้ร่วมกันทั้ง slab และผิว heightmap (สร้างครั้งเดียวต่อ loadJob)
+  // hole mask: canvas 2D วาด polygon รูที่เผยแล้วเป็นสีดำ ใช้ discard ผิว heightmap ทับรูไม่ให้
+  // บังรูที่ slab เจาะไว้จริง (ไม่งั้นผิว heightmap แบบ full-plane จะคลุมรูจนมองไม่เห็นความทะลุ)
+  let holeMaskCanvas = null, holeMaskCtx = null, holeMaskTex = null;
+
+  // ----- GPU height texture (ping-pong) -----
+  let rtA, rtB;              // RenderTarget ปัจจุบัน / scratch
+  let stampScene, stampCam, stampMesh, stampMat;
+  let clearScene, clearCam, clearMesh, clearMat;
+  let texW, texH;
+
+  let boundsW, boundsH, originX, originY, baseThickness;
+  let actions = [];
+  let actionIdx = 0;
+  let playing = false;
+  let speed = 3;
+  let lastTs = 0;
+  let onProgress = null;
+  let userSeeking = false;
+  let currentToolNumber = null;
+  let ro = null;
+  let busy = false;        // มี rebuild (seekTo/loadJob) กำลังทำงานอยู่หรือไม่
+  let generation = 0;      // เพิ่มทุกครั้งที่เริ่ม rebuild ใหม่ — ใช้ยกเลิกงานเก่าที่ยังค้างอยู่
+  const CHUNK_BATCHES = 6; // จำนวน ping-pong batch ต่อเฟรมระหว่าง rebuild (กัน main thread ค้าง)
+
+  const orbit = { theta: Math.PI * 0.25, phi: Math.PI * 0.32, radius: 400, target: new THREE.Vector3(0, 0, 0) };
+
+  function clamp(v, a, b) { return Math.max(a, Math.min(b, v)); }
+
+  /* =========================================================================
+   * Scene setup
+   * ====================================================================== */
+  function init(container) {
+    if (renderer && containerEl === container) return;
+    containerEl = container;
+    container.innerHTML = '';
+
+    renderer = new THREE.WebGLRenderer({ antialias: true });
+    webgl2ok = !!(renderer.capabilities && renderer.capabilities.isWebGL2);
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+    renderer.domElement.style.display = 'block';
+    renderer.domElement.style.width = '100%';
+    renderer.domElement.style.height = '100%';
+    container.appendChild(renderer.domElement);
+
+    scene = new THREE.Scene();
+    scene.background = new THREE.Color(0x11161d);
+    camera = new THREE.PerspectiveCamera(45, 1, 0.1, 8000);
+
+    group = new THREE.Group();
+    scene.add(group);
+
+    // ไฟจริงใน scene (ใช้กับ slab ที่เป็น MeshStandardMaterial — ผิว heightmap ใช้ shader
+    // คำนวณแสงเองแยกต่างหากอยู่แล้ว ไม่ได้พึ่งไฟพวกนี้)
+    scene.add(new THREE.AmbientLight(0xffffff, 0.55));
+    const dl1 = new THREE.DirectionalLight(0xffffff, 0.9); dl1.position.set(180, 320, 220); scene.add(dl1);
+    const dl2 = new THREE.DirectionalLight(0xffffff, 0.25); dl2.position.set(-200, 150, -150); scene.add(dl2);
+
+    initHoleMask();
+
+    buildControlsBar(container);
+    if (!webgl2ok) {
+      showMessage('เบราว์เซอร์/GPU นี้ไม่รองรับ WebGL2 — โหมดพรีวิว 3 มิติความละเอียดสูงใช้งานไม่ได้ในเครื่องนี้');
+      return;
+    }
+
+    attachManualOrbit(container);
+    initStampPipeline();
+
+    ro = new (window.ResizeObserver || function () { this.observe = function () {}; })(() => onResize());
+    ro.observe(container);
+    window.addEventListener('resize', onResize);
+
+    requestAnimationFrame(loop);
+    onResize();
+  }
+
+  function showMessage(text) {
+    if (!controlsEl) return;
+    const m = document.createElement('div');
+    m.className = 'sim3d-msg';
+    m.textContent = text;
+    controlsEl.parentElement.insertBefore(m, controlsEl);
+  }
+
+  function onResize() {
+    if (!containerEl || !renderer) return;
+    const w = containerEl.clientWidth, h = containerEl.clientHeight;
+    if (!w || !h) return;
+    renderer.setSize(w, h, false);
+    camera.aspect = w / h;
+    camera.updateProjectionMatrix();
+  }
+
+  /* ----- กล้องลาก-หมุน/ลูกกลิ้ง-ซูม/แพน (เหมือนเวอร์ชันก่อน) ----- */
+  function updateCamera() {
+    const p = orbit;
+    camera.position.set(
+      p.target.x + p.radius * Math.sin(p.phi) * Math.sin(p.theta),
+      p.target.y + p.radius * Math.cos(p.phi),
+      p.target.z + p.radius * Math.sin(p.phi) * Math.cos(p.theta)
+    );
+    camera.lookAt(p.target);
+  }
+  function attachManualOrbit(container) {
+    let dragging = false, panning = false, last = { x: 0, y: 0 };
+    container.addEventListener('mousedown', (e) => {
+      if (e.target.closest && e.target.closest('.sim3d-bar')) return;
+      dragging = e.button === 0 && !e.shiftKey;
+      panning = e.button === 2 || (e.button === 0 && e.shiftKey);
+      last = { x: e.clientX, y: e.clientY };
+    });
+    window.addEventListener('mouseup', () => { dragging = false; panning = false; });
+    window.addEventListener('mousemove', (e) => {
+      if (!dragging && !panning) return;
+      const dx = e.clientX - last.x, dy = e.clientY - last.y;
+      last = { x: e.clientX, y: e.clientY };
+      if (dragging) {
+        orbit.theta -= dx * 0.006;
+        orbit.phi = clamp(orbit.phi - dy * 0.006, 0.08, Math.PI * 0.49);
+        updateCamera();
+      } else if (panning) {
+        const s = orbit.radius * 0.0015;
+        const right = new THREE.Vector3(Math.cos(orbit.theta), 0, -Math.sin(orbit.theta));
+        orbit.target.addScaledVector(right, -dx * s);
+        orbit.target.y += dy * s;
+        updateCamera();
+      }
+    });
+    container.addEventListener('contextmenu', (e) => e.preventDefault());
+    container.addEventListener('wheel', (e) => {
+      e.preventDefault();
+      orbit.radius = clamp(orbit.radius * (1 + Math.sign(e.deltaY) * 0.08), 20, 6000);
+      updateCamera();
+    }, { passive: false });
+  }
+
+  function loop(ts) {
+    requestAnimationFrame(loop);
+    if (playing) stepPlayback(ts);
+    updateLod();
+    if (renderer) renderer.render(scene, camera);
+  }
+
+  /* =========================================================================
+   * แถบควบคุม (เหมือนเวอร์ชันก่อน)
+   * ====================================================================== */
+  function buildControlsBar(container) {
+    controlsEl = document.createElement('div');
+    controlsEl.className = 'sim3d-bar';
+    controlsEl.innerHTML =
+      '<button class="mini" id="sim3dPlay" title="เล่น/หยุด">▶</button>' +
+      '<input type="range" id="sim3dSeek" class="sim3d-seek" min="0" max="1000" value="1000">' +
+      '<span class="sim3d-label" id="sim3dStatus">ความเร็ว</span>' +
+      '<input type="range" id="sim3dSpeed" class="sim3d-speed" min="1" max="12" value="3">' +
+      '<button class="mini" id="sim3dReset" title="เริ่มใหม่จากแผ่นไม้เปล่า">⟲</button>';
+    container.appendChild(controlsEl);
+
+    const $btnPlay = controlsEl.querySelector('#sim3dPlay');
+    const $seek = controlsEl.querySelector('#sim3dSeek');
+    const $speed = controlsEl.querySelector('#sim3dSpeed');
+    const $reset = controlsEl.querySelector('#sim3dReset');
+    const $status = controlsEl.querySelector('#sim3dStatus');
+
+    $btnPlay.addEventListener('click', () => { if (playing) pause(); else play(); });
+    $speed.addEventListener('input', () => setSpeed(parseFloat($speed.value)));
+    $reset.addEventListener('click', () => { pause(); seekTo(0); });
+    $seek.addEventListener('mousedown', () => { userSeeking = true; });
+    window.addEventListener('mouseup', () => { userSeeking = false; });
+    $seek.addEventListener('input', () => { pause(); seekTo(parseFloat($seek.value) / 1000); });
+
+    setProgressCallback((idx, total) => {
+      $btnPlay.textContent = playing ? '⏸' : '▶';
+      $btnPlay.disabled = busy;
+      $status.textContent = busy ? 'กำลังประมวลผล…' : 'ความเร็ว';
+      if (!userSeeking) $seek.value = total ? Math.round((idx / total) * 1000) : 0;
+    });
+  }
+
+  /* =========================================================================
+   * Hole mask: canvas 2D วาด polygon ของรูที่ "ทะลุแล้ว" เป็นสีดำ — ใช้ใน fragment
+   * shader ของผิว heightmap เพื่อ discard บริเวณนั้น (กันผิว heightmap แบบ full-plane
+   * บังรูที่ slab (ExtrudeGeometry) เจาะไว้จริงจนมองไม่เห็นว่าทะลุ)
+   * ====================================================================== */
+  function initHoleMask() {
+    holeMaskCanvas = document.createElement('canvas');
+    holeMaskCanvas.width = 512; holeMaskCanvas.height = 512;
+    holeMaskCtx = holeMaskCanvas.getContext('2d');
+    holeMaskTex = new THREE.CanvasTexture(holeMaskCanvas);
+  }
+
+  function redrawHoleMask() {
+    const ctx = holeMaskCtx, SZ = holeMaskCanvas.width;
+    ctx.fillStyle = '#ffffff'; ctx.fillRect(0, 0, SZ, SZ); // ขาว = ผิวไม้ปกติ (ไม่ discard)
+    ctx.fillStyle = '#000000'; // ดำ = อยู่ในรู (ให้ fragment shader ของ heightmap discard)
+    revealedHoles.forEach((poly) => {
+      if (!poly || poly.length < 3) return;
+      ctx.beginPath();
+      poly.forEach((p, i) => {
+        const u = (p.x - originX) / boundsW, v = (p.y - originY) / boundsH;
+        const px = u * SZ, py = v * SZ;
+        if (i === 0) ctx.moveTo(px, py); else ctx.lineTo(px, py);
+      });
+      ctx.closePath();
+      ctx.fill();
+    });
+    holeMaskTex.needsUpdate = true;
+  }
+
+  /* =========================================================================
+   * Slab: แผ่นไม้จริงแบบมีความหนา (ExtrudeGeometry) + รูทะลุจริงตาม revealedHoles
+   *   - ขอบนอกของแผ่น = กรอบสี่เหลี่ยมจาก bounds จริง → มีผนังด้านข้างรอบนอกจริง
+   *   - รูเจาะ/ร่องตัดที่ "ทะลุและไม่มี tab" (ดู classifyAsHole) = hole ใน ExtrudeGeometry
+   *     ได้ผนังด้านในของรูที่เรียบเนียนจาก Three.js เองทั้งหมด ไม่ขึ้นกับความละเอียด mesh
+   *     ของบอร์ด (แก้ปัญหาหนามแหลม + ไม่มีความหนา + ไม่ดูขาดออกจากกัน ในจุดเดียว)
+   * ====================================================================== */
+  function shapePoint(p) {
+    return new THREE.Vector2(p.x - centerOffsetX(), p.y - centerOffsetY());
+  }
+
+  function buildTableSurface() {
+    if (tableMesh) { group.remove(tableMesh); tableMesh.geometry.dispose(); tableMesh.material.dispose(); }
+    const geo = new THREE.PlaneGeometry(boundsW * 1.05, boundsH * 1.05);
+    geo.rotateX(-Math.PI / 2); // ระนาบนอนในแกน XZ
+    const mat = new THREE.MeshStandardMaterial({ color: 0x2a2a30, roughness: 0.95, metalness: 0.0, side: THREE.DoubleSide });
+    tableMesh = new THREE.Mesh(geo, mat);
+    tableMesh.position.y = -0.5; // ต่ำกว่าพื้นโต๊ะเล็กน้อย กัน Z-fight กับหน้าล่างของ slab
+    group.add(tableMesh);
+  }
+
+  function rebuildSlab() {
+    if (slabMesh) { group.remove(slabMesh); slabMesh.geometry.dispose(); slabMesh.material.dispose(); }
+    const shape = new THREE.Shape(boardOutline.map(shapePoint));
+    revealedHoles.forEach((poly) => {
+      if (!poly || poly.length < 3) return;
+      shape.holes.push(new THREE.Path(poly.map(shapePoint)));
+    });
+    let geo;
+    try {
+      // ปิด bevel (เดิมเปิดไว้เพื่อความสวย) เพราะขัดกับการตัดหน้าบนทิ้งแบบ shader ด้านล่าง —
+      // bevel ทำให้ขอบบนสุดเอียงเป็นทางลาด ถ้าตัดทิ้งตามเกณฑ์ความสูงจะเหลือรอยบุ๋มแหว่งที่ขอบ
+      geo = new THREE.ExtrudeGeometry(shape, { depth: baseThickness, bevelEnabled: false, curveSegments: 12 });
+    } catch (e) {
+      // เผื่อ polygon บางอันมีปัญหา self-intersect ที่ earcut คำนวณไม่ได้ — ตัด hole ที่มีปัญหา
+      // ออกแล้วลองใหม่ (กันพรีวิวพังทั้งฉาก) — ลองทีละตัวจากท้ายสุด (เพิ่งเผยล่าสุด มักเป็นตัวที่มีปัญหา)
+      const safeHoles = shape.holes.slice();
+      while (safeHoles.length && !geo) {
+        safeHoles.pop();
+        const tryShape = new THREE.Shape(boardOutline.map(shapePoint));
+        tryShape.holes = safeHoles;
+        try { geo = new THREE.ExtrudeGeometry(tryShape, { depth: baseThickness, bevelEnabled: false, curveSegments: 12 }); } catch (e2) { /* ลองตัวต่อไป */ }
+      }
+      if (!geo) geo = new THREE.ExtrudeGeometry(new THREE.Shape(boardOutline.map(shapePoint)), { depth: baseThickness, bevelEnabled: false });
+    }
+    geo.rotateX(-Math.PI / 2); // หมุนให้ความหนา (extrude) อยู่ในแกน Y (ขึ้น) ตาม convention ของฉากนี้
+    geo.computeVertexNormals();
+
+    const mat = new THREE.ShaderMaterial({
+      uniforms: {
+        uWoodTex: { value: sharedWoodTex },
+        uBaseThickness: { value: baseThickness },
+        uKeyDir: { value: new THREE.Vector3(0.45, 1.0, 0.55) },
+        uFillDir: { value: new THREE.Vector3(-0.5, 0.4, -0.3) }
+      },
+      vertexShader:
+        'varying vec3 vWorldPos;\n' +
+        'varying vec3 vN;\n' +
+        'void main(){\n' +
+        // geometry ผ่าน rotateX ไปแล้วตอนสร้าง (bake ค่าจริงลงใน position attribute เลย)
+        // และ mesh นี้ไม่มี translate/rotate ของตัวเองอีก -> position ที่นี่ = world position ตรง ๆ
+        '  vWorldPos = position;\n' +
+        '  vN = normalMatrix * normal;\n' +
+        '  gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);\n' +
+        '}',
+      fragmentShader:
+        'precision highp float;\n' +
+        'varying vec3 vWorldPos;\n' +
+        'varying vec3 vN;\n' +
+        'uniform sampler2D uWoodTex;\n' +
+        'uniform float uBaseThickness;\n' +
+        'uniform vec3 uKeyDir;\n' +
+        'uniform vec3 uFillDir;\n' +
+        'void main(){\n' +
+        // ตัดหน้าบนสุด (top cap) ทิ้งทั้งหมด — ให้ผิว heightmap เป็นผู้แสดงผลหน้าบนแต่เพียง
+        // ผู้เดียวเสมอทั้งบอร์ด (กัน 2 ผิวซ้อนกันที่ความสูงเดียวกัน = Z-fighting/ลายมั่ว)
+        // slab เหลือแสดงแค่ผนังรอบนอก + ผนังในรูจริง + หน้าล่าง ซึ่งคือสิ่งที่ต้องการอยู่แล้ว\n' +
+        '  if (vWorldPos.y > uBaseThickness - 0.05) discard;\n' +
+        '  vec3 n = normalize(vN);\n' +
+        '  float diff = max(dot(n, normalize(uKeyDir)), 0.0) * 0.85 + max(dot(n, normalize(uFillDir)), 0.0) * 0.3 + 0.22;\n' +
+        // คำนวณ UV เองจากพิกัดโลกจริง (ไม่พึ่ง UV อัตโนมัติของ ExtrudeGeometry ที่อิงหน่วย mm
+        // เป็นพัน ๆ ทำให้ลายไม้ซ้ำถี่จนมั่ว) — สเกลให้ลายไม้กว้างประมาณ 280mm/ลาย\n' +
+        '  vec2 uv = vWorldPos.xz * 0.0035;\n' +
+        '  vec3 base = texture2D(uWoodTex, uv).rgb;\n' +
+        '  vec3 color = base * diff;\n' +
+        '  gl_FragColor = vec4(color, 1.0);\n' +
+        '}',
+      side: THREE.DoubleSide
+    });
+    slabMesh = new THREE.Mesh(geo, mat);
+    group.add(slabMesh);
+    redrawHoleMask();
+    slabDirty = false;
+  }
+
+  let lastSlabRebuildTs = 0;
+  const SLAB_REBUILD_INTERVAL = 300; // ms — ห่างขั้นต่ำระหว่าง rebuild แต่ละครั้ง (กันค้าง)
+  function rebuildSlabIfDirty(force) {
+    if (!slabDirty) return;
+    const now = Date.now();
+    if (!force && now - lastSlabRebuildTs < SLAB_REBUILD_INTERVAL) return; // ยังไม่ครบเวลา รอรอบหน้า
+    rebuildSlab();
+    lastSlabRebuildTs = now;
+  }
+
+  /* =========================================================================
+   * GPU stamp pipeline: render target ping-pong + shader สอง pass
+   *   1) clearMat  — เคลียร์ texture เป็นค่าคงที่ (ใช้ตอน seek ย้อนกลับ/เริ่มใหม่)
+   *   2) stampMat  — รับ stamp สูงสุด BATCH ตำแหน่งต่อ pass แล้ว min() เข้ากับเดิม
+   * ====================================================================== */
+  function initStampPipeline() {
+    stampScene = new THREE.Scene();
+    stampCam = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
+
+    stampMat = new THREE.ShaderMaterial({
+      uniforms: {
+        uPrev: { value: null },
+        uBoundsMin: { value: new THREE.Vector2(0, 0) },
+        uBoundsSize: { value: new THREE.Vector2(1, 1) },
+        uCount: { value: 0 },
+        uPos: { value: new Array(BATCH).fill(0).map(() => new THREE.Vector2(0, 0)) },
+        uRadius: { value: new Float32Array(BATCH) },
+        uHeight: { value: new Float32Array(BATCH) },
+        uType: { value: new Float32Array(BATCH) },
+        uParam: { value: new Float32Array(BATCH) }
+      },
+      vertexShader:
+        'varying vec2 vUv;\n' +
+        'void main(){ vUv = uv; gl_Position = vec4(position.xy, 0.0, 1.0); }',
+      fragmentShader:
+        'precision highp float;\n' +
+        'uniform sampler2D uPrev;\n' +
+        'uniform vec2 uBoundsMin;\n' +
+        'uniform vec2 uBoundsSize;\n' +
+        'uniform int uCount;\n' +
+        'uniform vec2 uPos[' + BATCH + '];\n' +
+        'uniform float uRadius[' + BATCH + '];\n' +
+        'uniform float uHeight[' + BATCH + '];\n' +
+        'uniform float uType[' + BATCH + '];\n' +
+        'uniform float uParam[' + BATCH + '];\n' +
+        'varying vec2 vUv;\n' +
+        'void main(){\n' +
+        '  float h = texture2D(uPrev, vUv).r;\n' +
+        '  vec2 world = uBoundsMin + vUv * uBoundsSize;\n' +
+        '  for (int i = 0; i < ' + BATCH + '; i++) {\n' +
+        '    if (i >= uCount) break;\n' +
+        '    float d = distance(world, uPos[i]);\n' +
+        '    if (d <= uRadius[i]) {\n' +
+        '      float cand;\n' +
+        '      if (uType[i] < 0.5) { cand = uHeight[i]; }\n' +
+        '      else if (uType[i] < 1.5) { cand = uHeight[i] + d * uParam[i]; }\n' +
+        '      else { float R = uParam[i]; float dd = min(d, R); cand = uHeight[i] + R - sqrt(max(R*R - dd*dd, 0.0)); }\n' +
+        '      h = min(h, cand);\n' +
+        '    }\n' +
+        '  }\n' +
+        '  gl_FragColor = vec4(h, 0.0, 0.0, 1.0);\n' +
+        '}'
+    });
+    stampMesh = new THREE.Mesh(new THREE.PlaneGeometry(2, 2), stampMat);
+    stampScene.add(stampMesh);
+
+    clearScene = new THREE.Scene();
+    clearCam = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
+    clearMat = new THREE.ShaderMaterial({
+      uniforms: { uValue: { value: 18 } },
+      vertexShader: 'void main(){ gl_Position = vec4(position.xy, 0.0, 1.0); }',
+      fragmentShader: 'precision highp float;\nuniform float uValue;\nvoid main(){ gl_FragColor = vec4(uValue,0.0,0.0,1.0); }'
+    });
+    clearMesh = new THREE.Mesh(new THREE.PlaneGeometry(2, 2), clearMat);
+    clearScene.add(clearMesh);
+  }
+
+  function makeRenderTarget(w, h) {
+    return new THREE.WebGLRenderTarget(w, h, {
+      type: THREE.FloatType,
+      format: THREE.RGBAFormat,
+      minFilter: THREE.LinearFilter,
+      magFilter: THREE.LinearFilter,
+      depthBuffer: false,
+      stencilBuffer: false
+    });
+  }
+
+  // เขียนค่าคงที่ลง rtA ทั้ง texture (ใช้ตอนเริ่มงานใหม่/seek ย้อนกลับ)
+  function clearHeight(value) {
+    clearMat.uniforms.uValue.value = value;
+    renderer.setRenderTarget(rtA);
+    renderer.render(clearScene, clearCam);
+    renderer.setRenderTarget(null);
+  }
+
+  // รัน 1 ping-pong pass: อ่านจาก rtA เขียนไป rtB ตาม batch ที่ส่งมา แล้วสลับ A/B
+  function runStampBatch(batchActions) {
+    const n = Math.min(batchActions.length, BATCH);
+    stampMat.uniforms.uPrev.value = rtA.texture;
+    stampMat.uniforms.uBoundsMin.value.set(originX, originY);
+    stampMat.uniforms.uBoundsSize.value.set(boundsW, boundsH);
+    stampMat.uniforms.uCount.value = n;
+    const pos = stampMat.uniforms.uPos.value, rad = stampMat.uniforms.uRadius.value,
+          hei = stampMat.uniforms.uHeight.value, typ = stampMat.uniforms.uType.value,
+          par = stampMat.uniforms.uParam.value;
+    for (let i = 0; i < n; i++) {
+      const a = batchActions[i];
+      pos[i].set(a.x, a.y);
+      rad[i] = a.r; hei[i] = a.h; typ[i] = a.profileType; par[i] = a.profileParam;
+    }
+    renderer.setRenderTarget(rtB);
+    renderer.render(stampScene, stampCam);
+    renderer.setRenderTarget(null);
+    const tmp = rtA; rtA = rtB; rtB = tmp; // สลับ ping-pong
+  }
+
+  /* =========================================================================
+   * โหลด job ใหม่ทั้งหมด
+   * ====================================================================== */
+  function loadJob(tab, machine) {
+    if (!renderer || !webgl2ok) return;
+    // clear LOD overlay เมื่อโหลดงานใหม่
+    if (lodGroup) { scene.remove(lodGroup); lodGroup = null; }
+    lodLastRadius = Infinity;
+    lodJob = null;
+    const b = tab.dxf.bounds;
+    boundsW = Math.max(b.width, 1);
+    boundsH = Math.max(b.height, 1);
+    originX = b.minX; originY = b.minY;
+    baseThickness = parseFloat(machine.woodThickness) || 18;
+
+    // texture ไม้สร้างครั้งเดียวต่อ loadJob ใช้ร่วมกันทั้ง slab (solid) และผิว heightmap
+    // (เดิมแต่ละ mesh สร้าง texture แยกกันเอง สิ้นเปลือง + ลายไม้ไม่ตรงกันระหว่าง 2 ผิว)
+    if (sharedWoodTex) sharedWoodTex.dispose();
+    sharedWoodTex = woodTexture();
+
+    boardOutline = [
+      { x: originX, y: originY },
+      { x: originX + boundsW, y: originY },
+      { x: originX + boundsW, y: originY + boundsH },
+      { x: originX, y: originY + boundsH }
+    ];
+    revealedHoles = [];
+    slabDirty = true;
+
+    sizeTo(boundsW, boundsH, TEX_LONG_SIDE, TEX_MIN_SIDE, (w, h) => { texW = w; texH = h; });
+    if (rtA) rtA.dispose(); if (rtB) rtB.dispose();
+    rtA = makeRenderTarget(texW, texH);
+    rtB = makeRenderTarget(texW, texH);
+
+    let meshW, meshH;
+    sizeTo(boundsW, boundsH, MESH_LONG_SIDE, MESH_MIN_SIDE, (w, h) => { meshW = w; meshH = h; });
+    buildGeometry(meshW, meshH);
+    buildTableSurface();
+    rebuildSlab(); // สร้าง slab เริ่มต้น (ยังไม่มีรู) ก่อน seekTo(1) จะค่อยเผยรูตามลำดับจริง
+
+    buildActions(tab.lastJob ? tab.lastJob.operations : [], machine);
+    lodJob = tab.lastJob ? { lastJob: tab.lastJob, machine } : null; // เก็บไว้ให้ LOD overlay ใช้
+    actionIdx = 0;
+    currentToolNumber = null;
+    pause();
+    clearHeight(baseThickness);
+    frameCamera();
+    // seekTo(1) เป็น async-chunked เอง (ดู comment ที่ตัวฟังก์ชัน) — ไม่บล็อก main thread
+    // แม้ไฟล์จะมี action จำนวนมาก, และจะยกเลิกงาน rebuild ค้างจากแท็บ/ไฟล์ก่อนหน้าอัตโนมัติ
+    // ผ่าน generation token (เผื่อมีการสลับแท็บ/เปิดไฟล์ใหม่รัว ๆ ระหว่างที่ยังโหลดไม่เสร็จ)
+    seekTo(1);
+  }
+
+  function sizeTo(w, h, longSide, minSide, cb) {
+    let gw, gh;
+    if (w >= h) { gw = longSide; gh = Math.max(minSide, Math.round(longSide * h / w)); }
+    else { gh = longSide; gw = Math.max(minSide, Math.round(longSide * w / h)); }
+    cb(gw, gh);
+  }
+
+  function centerOffsetX() { return originX + boundsW / 2; }
+  function centerOffsetY() { return originY + boundsH / 2; }
+
+  /* ----- mesh ของแผ่นไม้: สร้างครั้งเดียว ไม่ต้องอัปเดตตำแหน่งจุดอีกเลย
+   *       (vertex shader อ่านความสูงจริงจาก height texture ทุกเฟรมเอง) ----- */
+  function buildGeometry(gw, gh) {
+    if (mesh) { group.remove(mesh); mesh.geometry.dispose(); mesh.material.dispose(); }
+    const verts = new Float32Array(gw * gh * 3);
+    const uvs = new Float32Array(gw * gh * 2);
+    for (let j = 0; j < gh; j++) {
+      for (let i = 0; i < gw; i++) {
+        const idx = j * gw + i;
+        const u = i / (gw - 1), v = j / (gh - 1);
+        verts[idx * 3] = (originX + u * boundsW) - centerOffsetX();
+        verts[idx * 3 + 1] = 0; // ถูก override ด้วย vertex shader ทั้งหมด
+        // กลับเครื่องหมาย Z ตรงนี้ (เทียบกับเวอร์ชันก่อน) — เพื่อให้ "Y จริงเพิ่มขึ้น"
+        // ปรากฏเป็น "ขึ้นบนจอ" ตรงกับทิศทางของ preview 2D เดิม (เข้ากับกล้อง theta=0
+        // ที่ปรับไว้ใน frameCamera ด้านล่าง — ถ้าไม่กลับเครื่องหมาย Y จะกลับหัวกับ 2D)
+        verts[idx * 3 + 2] = -((originY + v * boundsH) - centerOffsetY());
+        uvs[idx * 2] = u; uvs[idx * 2 + 1] = v;
+      }
+    }
+    // ใช้ Uint32Array preallocated เขียนตรงตำแหน่ง แทน plain array + push()
+    // (push() ทีละค่าเข้า array ปกติ ~940,000 ครั้ง ช้ากว่านี้มากสำหรับ mesh ความละเอียดสูง
+    // ทั้งจากการ realloc ของ array และจาก three.js ต้องแปลงเป็น typed array เองอีกที)
+    const nQuads = (gw - 1) * (gh - 1);
+    const indices = new Uint32Array(nQuads * 6);
+    let p = 0;
+    for (let j = 0; j < gh - 1; j++) {
+      for (let i = 0; i < gw - 1; i++) {
+        const a = j * gw + i, b = j * gw + i + 1, c = (j + 1) * gw + i, d = (j + 1) * gw + i + 1;
+        indices[p++] = a; indices[p++] = c; indices[p++] = b;
+        indices[p++] = b; indices[p++] = c; indices[p++] = d;
+      }
+    }
+    const geo = new THREE.BufferGeometry();
+    geo.setIndex(new THREE.BufferAttribute(indices, 1));
+    geo.setAttribute('position', new THREE.BufferAttribute(verts, 3));
+    geo.setAttribute('uv', new THREE.BufferAttribute(uvs, 2));
+
+    const mat = new THREE.ShaderMaterial({
+      uniforms: {
+        uHeightTex: { value: null },
+        uWoodTex: { value: sharedWoodTex },
+        uHoleMask: { value: holeMaskTex },
+        uTexel: { value: new THREE.Vector2(1 / texW, 1 / texH) },
+        uCellWorldX: { value: boundsW / texW },
+        uCellWorldY: { value: boundsH / texH },
+        uBaseThickness: { value: baseThickness },
+        // ไฟ 3 จุด: key (หลัก) / fill (เติมเงา ทิศตรงข้ามอ่อน ๆ) / rim (ขอบเรือง ด้านหลัง)
+        uKeyDir: { value: new THREE.Vector3(0.45, 1.0, 0.55) },
+        uFillDir: { value: new THREE.Vector3(-0.5, 0.4, -0.3) },
+        uRimDir: { value: new THREE.Vector3(0.0, 0.25, -1.0) }
+      },
+      vertexShader:
+        'varying vec2 vUv;\n' +
+        'varying vec3 vWorldPos;\n' +
+        'uniform sampler2D uHeightTex;\n' +
+        'uniform vec2 uTexel;\n' +
+        'void main(){\n' +
+        '  vUv = uv;\n' +
+        // sample แบบ box-filter 3x3 รอบจุด แทนการสุ่ม texel เดียวตรง ๆ — ลดปัญหา "หนามแหลม"
+        // ที่เกิดจาก vertex หนึ่งบังเอิญตกตรง texel ลึกผิดปกติ ขณะ vertex ข้างเคียง (ซึ่งอยู่ห่าง
+        // กันกว่า 1 texel เพราะ mesh หยาบกว่า texture) ไม่ได้ตกตรงจุดนั้น ทำให้ผิวกระโดดเป็นหนาม\n' +
+        '  float h = 0.0;\n' +
+        '  for (int dx = -1; dx <= 1; dx++) {\n' +
+        '    for (int dy = -1; dy <= 1; dy++) {\n' +
+        '      h += texture2D(uHeightTex, uv + vec2(float(dx), float(dy)) * uTexel).r;\n' +
+        '    }\n' +
+        '  }\n' +
+        '  h /= 9.0;\n' +
+        '  vec3 pos = position;\n' +
+        '  pos.y = h;\n' +
+        '  vWorldPos = (modelMatrix * vec4(pos, 1.0)).xyz;\n' +
+        '  gl_Position = projectionMatrix * modelViewMatrix * vec4(pos, 1.0);\n' +
+        '}',
+      fragmentShader:
+        'precision highp float;\n' +
+        'varying vec2 vUv;\n' +
+        'varying vec3 vWorldPos;\n' +
+        'uniform sampler2D uHeightTex;\n' +
+        'uniform sampler2D uWoodTex;\n' +
+        'uniform sampler2D uHoleMask;\n' +
+        'uniform vec2 uTexel;\n' +
+        'uniform float uCellWorldX;\n' +
+        'uniform float uCellWorldY;\n' +
+        'uniform float uBaseThickness;\n' +
+        'uniform vec3 uKeyDir;\n' +
+        'uniform vec3 uFillDir;\n' +
+        'uniform vec3 uRimDir;\n' +
+        'void main(){\n' +
+        // ถ้าจุดนี้อยู่ในรูที่ "เผยออกมาแล้ว" (slab เจาะรูจริงตรงนี้แล้ว) ให้ discard ผิว
+        // heightmap ทิ้งไปเลย — ไม่งั้น plane เต็มแผ่นนี้จะทับบังรูที่ slab เจาะไว้จริง
+        '  if (texture2D(uHoleMask, vUv).r < 0.5) { discard; }\n' +
+        '  float hC = texture2D(uHeightTex, vUv).r;\n' +
+        // กัดทะลุพื้นโต๊ะ (height <= 0) = ขาดออกจากกันจริง → discard ให้เห็นทะลุถึงด้านล่าง
+        // ใช้กับ Profile/Contour ที่ตัดทะลุไม่มี tab (กัด heightmap ลึกถึง realZ ที่ติดลบ/ใกล้ 0
+        // ตาม cutDeeper) แทนการสร้าง slab hole แบบเดิมที่ทำให้ earcut ช้าจนแครช
+        '  if (hC <= 0.02) { discard; }\n' +
+        '  float hL = texture2D(uHeightTex, vUv - vec2(uTexel.x, 0.0)).r;\n' +
+        '  float hR = texture2D(uHeightTex, vUv + vec2(uTexel.x, 0.0)).r;\n' +
+        '  float hD = texture2D(uHeightTex, vUv - vec2(0.0, uTexel.y)).r;\n' +
+        '  float hU = texture2D(uHeightTex, vUv + vec2(0.0, uTexel.y)).r;\n' +
+        '  vec3 n = normalize(vec3((hL - hR) / (2.0*uCellWorldX), 1.0, (hD - hU) / (2.0*uCellWorldY)));\n' +
+        // bevel ปลอม ๆ ที่ขอบนอกของแผ่น (ไม่ได้เพิ่ม geometry จริง แค่บิด normal เล็กน้อยใกล้ขอบ
+        // ให้แสงตกกระทบต่างจากตรงกลาง ดูมีมุมมน/ลบเหลี่ยมเหมือนวัสดุจริงที่มีความหนา)
+        '  float edgeDist = min(min(vUv.x, 1.0 - vUv.x), min(vUv.y, 1.0 - vUv.y));\n' +
+        '  float edgeBevel = 1.0 - smoothstep(0.0, 0.006, edgeDist);\n' +
+        '  vec2 edgeDir = vec2(step(vUv.x, 0.5) - step(0.5, vUv.x), step(vUv.y, 0.5) - step(0.5, vUv.y));\n' +
+        '  n = normalize(n + vec3(edgeDir.x, 0.0, edgeDir.y) * edgeBevel * 0.6);\n' +
+        // แสง 3 จุด: key (หลัก, สร้างเงา/ทิศหลัก) + fill (เติมเงาให้ไม่มืดดำสนิท) + rim (ไล้ขอบเบา ๆ)
+        '  float diffKey = max(dot(n, normalize(uKeyDir)), 0.0);\n' +
+        '  float diffFill = max(dot(n, normalize(uFillDir)), 0.0);\n' +
+        '  float diffRim = max(dot(n, normalize(uRimDir)), 0.0);\n' +
+        // specular แบบ Blinn-Phong อย่างง่าย ให้ผิวไม้มีความเงาเล็กน้อยตามมุมมอง (ไม่ใช่สีทึบแบน ๆ)
+        '  vec3 viewDir = normalize(cameraPosition - vWorldPos);\n' +
+        '  vec3 halfVec = normalize(normalize(uKeyDir) + viewDir);\n' +
+        '  float spec = pow(max(dot(n, halfVec), 0.0), 28.0) * 0.18;\n' +
+        // curvature ≈ ความเว้า/นูนรอบจุดนี้ — ใช้ทำ edge-darkening แบบประมาณ AO ขยายระยะให้นุ่มขึ้น
+        // (เทียบกับเวอร์ชันก่อนที่แคบและคมเกินไปจนดูเป็นเส้นมากกว่าเงาธรรมชาติ)\n' +
+        '  float curvature = hL + hR + hD + hU - 4.0 * hC;\n' +
+        '  float ao = 1.0 - clamp(-curvature * 1.6, 0.0, 0.55);\n' +
+        // เนื้อไม้ที่ถูกกัดใหม่ (ลึกกว่าผิวบนเดิมพอสมควร) ให้สีอ่อน/อมเหลืองกว่าผิวเดิมเล็กน้อย
+        // เหมือนเนื้อไม้สดที่เพิ่งถูกเปิดออก ต่างจากผิวบนที่อาจผ่านการเคลือบ/ผึ่งมาก่อน\n' +
+        '  float cutAmount = clamp((uBaseThickness - hC) * 0.4, 0.0, 1.0);\n' +
+        '  vec3 freshWood = vec3(0.92, 0.78, 0.56);\n' +
+        '  vec3 base = texture2D(uWoodTex, vUv * 10.0).rgb;\n' +
+        // เพิ่ม "bump" ปลอมจากลายไม้เอง: ดึงความต่างของความสว่าง texture รอบจุดมาบิด normal อีกชั้น
+        // เล็กน้อย (ไม่ต้องมี normal map แยก) ให้เห็นริ้วเสี้ยนไม้นูนขึ้นมาบาง ๆ ตามแสง\n' +
+        '  float lumaL = dot(texture2D(uWoodTex, (vUv - vec2(0.003, 0.0)) * 10.0).rgb, vec3(0.299,0.587,0.114));\n' +
+        '  float lumaR = dot(texture2D(uWoodTex, (vUv + vec2(0.003, 0.0)) * 10.0).rgb, vec3(0.299,0.587,0.114));\n' +
+        '  float grainTilt = (lumaL - lumaR) * 0.4;\n' +
+        '  float diff = diffKey + diffFill * 0.35 + diffRim * 0.18 + grainTilt;\n' +
+        '  vec3 color = mix(base, freshWood, cutAmount * 0.45) * (0.28 + 0.95 * max(diff, 0.0)) * ao + spec;\n' +
+        '  color *= mix(0.55, 1.0, 1.0 - edgeBevel * 0.7);\n' + // เข้มขึ้นเล็กน้อยตรงขอบนอกสุด (เหมือน AO ธรรมชาติของมุมวัสดุ)
+        // tone mapping แบบง่าย (Reinhard-lite) กันส่วนสว่างแบนจนดูเป็นพลาสติก\n' +
+        '  color = color / (1.0 + color * 0.25);\n' +
+        '  gl_FragColor = vec4(color, 1.0);\n' +
+        '}',
+      side: THREE.DoubleSide
+    });
+    mesh = new THREE.Mesh(geo, mat);
+    group.add(mesh);
+  }
+
+  /* ----- ลายไม้แบบ procedural: multi-octave value-noise (fBm) เลียนเสี้ยนไม้จริง -----
+   * วาดด้วยโค้ดเองทั้งหมด (ไม่โหลดรูปจากเน็ต) ผ่าน ImageData ตรง ๆ เร็วกว่าวาด stroke
+   * หลายร้อยเส้น และคุมทิศทาง/ความถี่ของเสี้ยนได้ละเอียดกว่าเดิม */
+  function makeValueNoise2D(seed) {
+    const size = 64;
+    const grid = new Float32Array(size * size);
+    let s = seed || 1;
+    const rnd = () => { s = (s * 9301 + 49297) % 233280; return s / 233280; };
+    for (let i = 0; i < grid.length; i++) grid[i] = rnd();
+    function sample(x, y) {
+      x = ((x % size) + size) % size; y = ((y % size) + size) % size;
+      return grid[Math.floor(y) * size + Math.floor(x)];
+    }
+    return function noise(x, y) {
+      const xf = x - Math.floor(x), yf = y - Math.floor(y);
+      const x0 = Math.floor(x), y0 = Math.floor(y);
+      const v00 = sample(x0, y0), v10 = sample(x0 + 1, y0);
+      const v01 = sample(x0, y0 + 1), v11 = sample(x0 + 1, y0 + 1);
+      const sx = xf * xf * (3 - 2 * xf), sy = yf * yf * (3 - 2 * yf);
+      return v00 * (1 - sx) * (1 - sy) + v10 * sx * (1 - sy) + v01 * (1 - sx) * sy + v11 * sx * sy;
+    };
+  }
+
+  function woodTexture() {
+    const SZ = 512;
+    const c = document.createElement('canvas');
+    c.width = SZ; c.height = SZ;
+    const ctx = c.getContext('2d');
+    const img = ctx.createImageData(SZ, SZ);
+    const noiseA = makeValueNoise2D(11), noiseB = makeValueNoise2D(37), noiseC = makeValueNoise2D(91);
+
+    // สีพื้นไม้อ่อน/เข้ม (ปลายสุดของช่วงสีที่ fBm จะไล่อยู่ระหว่างนี้)
+    const lo = [168, 122, 74], hi = [222, 178, 124];
+
+    for (let y = 0; y < SZ; y++) {
+      for (let x = 0; x < SZ; x++) {
+        // เสี้ยนไม้ยืดตามแกน Y (คูณ y ด้วยค่าน้อย, x ด้วยค่ามาก) ให้เป็นริ้วยาวแนวตั้ง
+        // แล้วบวก fBm หลาย octave ซ้อนกันให้ได้ลายที่ไม่ซ้ำซากเหมือน noise ชั้นเดียว
+        const nx = x / SZ, ny = y / SZ;
+        let f = 0, amp = 1, freq = 1, sum = 0;
+        const octaves = [
+          { fx: 18, fy: 2.2, noise: noiseA, w: 0.55 },
+          { fx: 46, fy: 5.0, noise: noiseB, w: 0.30 },
+          { fx: 130, fy: 14.0, noise: noiseC, w: 0.15 }
+        ];
+        octaves.forEach((o) => { f += o.noise(nx * o.fx, ny * o.fy) * o.w; sum += o.w; });
+        f /= sum;
+        // เพิ่ม "pore" จุดเล็ก ๆ กระจายแบบสุ่มความถี่สูง ให้พื้นผิวไม่เรียบเนียนเกินไป
+        const pore = noiseC(nx * 220 + 50, ny * 220 + 50);
+        f = f * 0.85 + pore * 0.15;
+        const t = Math.max(0, Math.min(1, f));
+        const idx = (y * SZ + x) * 4;
+        img.data[idx] = lo[0] + (hi[0] - lo[0]) * t;
+        img.data[idx + 1] = lo[1] + (hi[1] - lo[1]) * t;
+        img.data[idx + 2] = lo[2] + (hi[2] - lo[2]) * t;
+        img.data[idx + 3] = 255;
+      }
+    }
+    ctx.putImageData(img, 0, 0);
+    const tex = new THREE.CanvasTexture(c);
+    tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
+    return tex;
+  }
+
+  /* =========================================================================
+   * แปลง realZ (จาก toRealZ() เดิมใน app.js) -> ความสูงจากพื้นโต๊ะ
+   * ====================================================================== */
+  function heightFromRealZ(realZ, machine) {
+    if (machine.z0Mode === 'table') return realZ;
+    return baseThickness + realZ;
+  }
+
+  // คืนค่า { profileType, profileParam } ตามชนิดดอก — ใช้ในสมการ shader
+  // 0 = flat (endmill/formtool), 1 = V-bit (cone), 2 = ball nose (เผื่ออนาคต)
+  function toolProfile(tool) {
+    if (!tool) return { profileType: 0, profileParam: 0 };
+    if (tool.toolType === 'vbit') {
+      const angleRad = ((parseFloat(tool.vbitAngle) || 90) * Math.PI) / 180;
+      return { profileType: 1, profileParam: 1 / Math.tan(angleRad / 2) };
+    }
+    // ballnose: เผื่อไว้ในอนาคตถ้า Tool Library เพิ่มชนิดนี้ (ยังไม่มีในระบบปัจจุบัน)
+    if (tool.toolType === 'ballnose') {
+      return { profileType: 2, profileParam: (tool.diameter || 6) / 2 };
+    }
+    return { profileType: 0, profileParam: 0 }; // endmill, formtool (ค่าประมาณ flat)
+  }
+
+  // ทะลุหรือไม่: เทียบความสูงของ pass สุดท้ายกับระดับโต๊ะ (0) — เผื่อ cutDeeper เล็กน้อย
+  function isThroughOp(op, machine) {
+    const passesZ = op.passes && op.passes.length ? op.passes : [op.targetZ];
+    const lastH = heightFromRealZ(passesZ[passesZ.length - 1], machine);
+    return lastH <= 0.15;
+  }
+
+  // เงื่อนไขที่จะให้เป็น "รูทะลุจริง" (ExtrudeGeometry hole ใน slab):
+  //   - drill เท่านั้น ที่ทะลุ — เป็นรูกลมเดี่ยว ๆ ไม่กี่รู earcut คำนวณเร็ว ไม่มีปัญหา
+  //   - contour/profile: ไม่ใช้ slab hole อีกต่อไป (เดิมทำเป็น kerf quad หลายร้อยชิ้น ทำให้
+  //     earcut ช้าจนแครช + winding order ไม่นิ่งจนร่องขาดเป็นช่วง) เปลี่ยนไปกัด heightmap
+  //     ลึกทะลุแทน แล้ว fragment shader ของผิว heightmap discard จุดที่ความสูง <= 0 ออกเอง
+  //     (เห็นทะลุถึงพื้นโต๊ะ = ขาดจากกันจริง, เรียบตาม texture 1280px, ไม่ผ่าน earcut เลย)
+  function classifyAsHole(op, machine) {
+    if (op.kind === 'drill') return isThroughOp(op, machine);
+    return false;
+  }
+
+  function buildHolePolygons(op) {
+    // เหลือเฉพาะ drill (วงกลม) — contour ไม่เรียกฟังก์ชันนี้แล้ว
+    const r = (op.tool && op.tool.diameter ? op.tool.diameter : 6) / 2;
+    const N = 24;
+    const poly = [];
+    for (let i = 0; i < N; i++) {
+      const a = (i / N) * Math.PI * 2;
+      poly.push({ x: op.point.x + Math.cos(a) * r, y: op.point.y + Math.sin(a) * r });
+    }
+    return [poly];
+  }
+
+  /* =========================================================================
+   * สร้างลำดับ "การกัด" ทั้งหมดล่วงหน้า — แบ่งเป็น 2 ชนิด action:
+   *   - { type:'hole', polygon, ... }  รูทะลุจริง (เผยเข้า revealedHoles ตอนเล่นถึง)
+   *   - { type:'stamp', x,y,r,h,... }  กัด heightmap แบบเดิม (pocket/มี tab/ไม่ทะลุ)
+   * ====================================================================== */
+  function buildActions(operations, machine) {
+    actions = [];
+    // ใช้ฟังก์ชันเดียวกับที่ gcode-generator.js ใช้จัดลำดับการตัดจริง (เจาะ/pocket ก่อน,
+    // ตัดนอกล็อกท้ายสุดเสมอ ฯลฯ) — ห้ามเขียน logic เรียงลำดับแยกเอง เพราะจะเพี้ยนจาก
+    // G-code จริงได้ถ้าอีกฝั่งแก้กฎแล้วลืมอัปเดตที่นี่
+    const GG = global.GCodeGenerator;
+    let ops;
+    if (GG && typeof GG.orderOperations === 'function') {
+      const groups = GG.orderOperations(operations || [], machine);
+      ops = [];
+      groups.forEach((g) => { ops.push.apply(ops, g.ops); });
+    } else {
+      // fallback เผื่อโหลดสคริปต์ผิดลำดับ (ไม่ควรเกิดขึ้นถ้า index.html โหลด gcode-generator.js
+      // มาก่อน simulate-3d.js) — ใช้ลำดับดิบไปก่อน ดีกว่า error
+      ops = (operations || []).slice().sort((a, b) => (a.order || 0) - (b.order || 0));
+    }
+    const sampleStep = Math.max(boundsW / texW, boundsH / texH) * 1.2;
+
+    // เพิ่ม travel waypoints ระหว่าง op แต่ละตัว เพื่อให้ tool mesh เคลื่อนที่ด้วยความเร็ว
+    // RAPID_FEED แทนการกระโดดทันที — waypoint ไม่ได้ stamp heightmap เลย แค่ขยับ tool
+    let lastTravelPt = null; // ตำแหน่งล่าสุดที่ tool อยู่หลังจบ operation ก่อนหน้า
+
+    // helper: แทรก travel waypoints จาก (x0,y0) → (x1,y1) ที่ความสูง safeH
+    function addTravel(x0, y0, x1, y1, safeH, toolRef) {
+      const dist = Math.hypot(x1 - x0, y1 - y0);
+      if (dist < TRAVEL_STEP) {
+        // ระยะสั้นเกินไป แทรกแค่จุดเดียว
+        actions.push({ type: 'travel', x: x1, y: y1, h: safeH, tool: toolRef });
+        return;
+      }
+      const steps = Math.ceil(dist / TRAVEL_STEP);
+      for (let i = 1; i <= steps; i++) {
+        const t = i / steps;
+        actions.push({ type: 'travel', x: x0 + (x1 - x0) * t, y: y0 + (y1 - y0) * t, h: safeH, tool: toolRef });
+      }
+    }
+
+    ops.forEach((op) => {
+      const tool = op.tool;
+      const safeH = baseThickness + (parseFloat(machine.rapidClearance) || 3);
+
+      // คำนวณจุดเริ่มต้นของ op นี้เพื่อใส่ travel ก่อนเริ่มตัด
+      let opStartX, opStartY;
+      if (op.kind === 'drill') opStartX = op.point.x, opStartY = op.point.y;
+      else if (op.kind === 'pocket' && op.rings && op.rings[0] && op.rings[0][0]) opStartX = op.rings[0][0].x, opStartY = op.rings[0][0].y;
+      else if (op.path && op.path[0]) opStartX = op.path[0].x, opStartY = op.path[0].y;
+
+      // แทรก travel ถ้ามีตำแหน่งก่อนหน้า และ op นี้มีจุดเริ่มต้นชัดเจน
+      if (lastTravelPt && opStartX !== undefined) {
+        addTravel(lastTravelPt.x, lastTravelPt.y, opStartX, opStartY, safeH, tool);
+      }
+
+      if (classifyAsHole(op, machine)) {
+        const polygons = buildHolePolygons(op);
+        const last = op.kind === 'drill' ? op.point : (op.path[op.path.length - 1] || { x: originX, y: originY });
+        if (polygons.length) actions.push({ type: 'hole', polygons, x: last.x, y: last.y, h: 0, tool });
+        lastTravelPt = { x: last.x, y: last.y };
+        return;
+      }
+
+      const radius = (tool && tool.diameter ? tool.diameter : 6) / 2;
+      const profile = toolProfile(tool);
+
+      if (op.kind === 'drill') {
+        const seq = (op.passes && op.passes.length ? op.passes : [op.targetZ]).map((z) => heightFromRealZ(z, machine));
+        seq.forEach((h) => actions.push({ type: 'stamp', x: op.point.x, y: op.point.y, r: radius, h, profileType: profile.profileType, profileParam: profile.profileParam, tool }));
+        lastTravelPt = { x: op.point.x, y: op.point.y };
+        return;
+      }
+
+      const rings = op.kind === 'pocket' ? (op.rings || []) : [op.path];
+      const tabSpans = (op.kind === 'contour' && op.tabs) ? op.tabs : [];
+      const tabHeight = (op.kind === 'contour' && op.tabTopZ !== undefined) ? heightFromRealZ(op.tabTopZ, machine) : null;
+      const passesZ = op.passes && op.passes.length ? op.passes : [op.targetZ];
+
+      rings.forEach((ring) => {
+        if (!ring || ring.length < 2) return;
+        const samples = samplePath(ring, sampleStep);
+        passesZ.forEach((z) => {
+          const h = heightFromRealZ(z, machine);
+          samples.forEach((s) => {
+            let hh = h;
+            if (tabSpans.length && tabHeight !== null) {
+              const inTab = tabSpans.some((t) => s.dist >= t.start && s.dist <= t.end);
+              if (inTab) hh = Math.max(h, tabHeight);
+            }
+            actions.push({ type: 'stamp', x: s.x, y: s.y, r: radius, h: hh, profileType: profile.profileType, profileParam: profile.profileParam, tool });
+          });
+        });
+        // ตำแหน่งสุดท้ายหลังจบ ring นี้
+        if (ring.length > 0) lastTravelPt = { x: ring[ring.length - 1].x, y: ring[ring.length - 1].y };
+      });
+    });
+  }
+
+  function samplePath(pts, step) {
+    const out = [{ x: pts[0].x, y: pts[0].y, dist: 0 }];
+    let dist = 0;
+    for (let i = 0; i < pts.length - 1; i++) {
+      const a = pts[i], b = pts[i + 1];
+      const segLen = Math.hypot(b.x - a.x, b.y - a.y);
+      if (segLen < 1e-9) continue;
+      let travelled = 0;
+      while (travelled + step < segLen) {
+        travelled += step;
+        const t = travelled / segLen;
+        out.push({ x: a.x + (b.x - a.x) * t, y: a.y + (b.y - a.y) * t, dist: dist + travelled });
+      }
+      dist += segLen;
+      out.push({ x: b.x, y: b.y, dist });
+    }
+    return out;
+  }
+
+  /* =========================================================================
+   * Playback control
+   * ====================================================================== */
+  function play() {
+    if (!actions.length || busy) return;
+    if (actionIdx >= actions.length) {
+      // เล่นจบไปแล้ว ต้อง rebuild จากศูนย์ก่อน — รอให้ rebuild เสร็จแล้วค่อยเริ่มเล่นจริง
+      // (seekTo เป็น async-chunked แล้ว ตั้ง playing=true ทันทีตรงนี้จะเล่นทับ rebuild ที่ยังไม่เสร็จ)
+      seekTo(0, () => { playing = true; lastTs = 0; report(); });
+      return;
+    }
+    playing = true; lastTs = 0;
+    report();
+  }
+  function pause() { playing = false; report(); }
+  function setSpeed(v) { speed = clamp(v, 0.1, 30); }
+  function setProgressCallback(fn) { onProgress = fn; }
+  function report() { if (onProgress) onProgress(actionIdx, actions.length); }
+
+  function setBusy(v) { busy = v; report(); }
+
+  function applyToolVisual(a) {
+    const num = a.tool ? a.tool.number : undefined;
+    if (currentToolNumber !== num) { ensureToolMesh(a.tool); currentToolNumber = num; }
+    updateToolMesh(a);
+  }
+
+  // ประมวลผล action ช่วงหนึ่ง (mix ของ 'hole' และ 'stamp' ปนกันได้) — 'stamp' รวมเป็น batch
+  // ยิง GPU ทีละกลุ่มเหมือนเดิม, 'hole' แค่ push polygon เข้า revealedHoles (ถูกของจริงทีหลัง
+  // ครั้งเดียวตอน sync ของแต่ละเฟรม ไม่ใช่ rebuild ทุก action เพื่อกัน rebuild ถี่เกินจำเป็น)
+  function processActions(list) {
+    let lastAction = null;
+    let i = 0;
+    while (i < list.length) {
+      if (list[i].type === 'hole') {
+        revealedHoles.push.apply(revealedHoles, list[i].polygons);
+        slabDirty = true;
+        lastAction = list[i];
+        i++;
+      } else if (list[i].type === 'travel') {
+        // travel: ขยับ tool mesh ที่ safeZ ไม่ stamp heightmap เลย
+        lastAction = list[i];
+        i++;
+      } else {
+        let j = i;
+        const buf = [];
+        while (j < list.length && list[j].type !== 'hole' && list[j].type !== 'travel' && buf.length < BATCH) {
+          buf.push(list[j]); j++;
+        }
+        if (buf.length) runStampBatch(buf);
+        lastAction = buf[buf.length - 1] || lastAction;
+        i = j;
+      }
+    }
+    return lastAction;
+  }
+
+  function stepPlayback(ts) {
+    if (!actions.length) { playing = false; return; }
+    if (!lastTs) lastTs = ts;
+    const dt = ts - lastTs; lastTs = ts;
+    const stepsWanted = Math.max(1, Math.round(speed * dt * 0.1));
+    const end = Math.min(actionIdx + stepsWanted, actions.length);
+    const lastAction = processActions(actions.slice(actionIdx, end));
+    actionIdx = end;
+    if (lastAction) applyToolVisual(lastAction);
+    syncMeshTexture();
+    rebuildSlabIfDirty();
+    report();
+    if (actionIdx >= actions.length) playing = false;
+  }
+
+  /* ---------------------------------------------------------------------------
+   * seekTo(fraction, onComplete?) — ไปยังตำแหน่งที่ต้องการบน action queue
+   *   - เดินหน้าจากจุดเดิม: stamp/เผยรู แค่ส่วนต่าง (เร็ว)
+   *   - ย้อนกลับ: clear heightmap + รีเซ็ต revealedHoles แล้วเล่นใหม่ทั้งหมดตั้งแต่ต้น
+   *   - ทำงานแบบ async-chunked เสมอ (ไม่บล็อก main thread แม้ action จะมีหลักแสน)
+   *   - มี generation token: ถ้ามีการเรียก seekTo()/loadJob() ใหม่ก่อนงานเก่าจะเสร็จ
+   *     (เช่นสลับแท็บไฟล์รัว ๆ, เปิดไฟล์ใหม่ระหว่างกำลัง rebuild) งานเก่าจะถูกทิ้งอัตโนมัติ
+   *     ไม่ทำให้ค้างซ้อนกัน และไม่ทำให้ภาพ 3D ไม่ตรงกับแท็บที่เลือกอยู่จริง
+   * ------------------------------------------------------------------------- */
+  function seekTo(fraction, onComplete) {
+    if (!actions.length) {
+      actionIdx = 0; report();
+      if (onComplete) onComplete();
+      return;
+    }
+    const target = Math.round(clamp(fraction, 0, 1) * actions.length);
+    generation++;
+    const myGen = generation;
+    setBusy(true);
+
+    function finish() {
+      if (myGen !== generation) return; // มีงานใหม่แทนที่ไปแล้ว ไม่ finalize ของเก่า
+      actionIdx = target;
+      if (target > 0) applyToolVisual(actions[target - 1]);
+      else if (toolMesh) toolMesh.visible = false;
+      syncMeshTexture();
+      rebuildSlabIfDirty(true); // บังคับให้ตรงกับ progress สุดท้ายเสมอ (ไม่ปล่อยให้ throttle ข้าม)
+      setBusy(false);
+      lastTs = 0;
+      if (onComplete) onComplete();
+    }
+
+    if (target < actionIdx) {
+      clearHeight(baseThickness);
+      currentToolNumber = null;
+      revealedHoles = [];     // ย้อนกลับ = ต้องล้างรูที่เผยไว้ทั้งหมดด้วย ไม่ใช่แค่ heightmap
+      slabDirty = true;
+      actionIdx = 0;
+      runRangeAsync(0, target, myGen, finish);
+    } else if (target > actionIdx) {
+      runRangeAsync(actionIdx, target, myGen, finish);
+    } else {
+      finish();
+    }
+  }
+
+  // รัน action ตั้งแต่ index [from, to) แบบแบ่งเป็น chunk ต่อเฟรม (กัน main thread ค้าง)
+  // เช็ค generation token ทุกเฟรมก่อนทำงาน — ถ้าถูกแทนที่ด้วยงานใหม่แล้วจะหยุดทันที
+  function runRangeAsync(from, to, myGen, onDone) {
+    let i = from;
+    function step() {
+      if (myGen !== generation) return; // ถูกยกเลิก (มีงาน rebuild ใหม่กว่าเข้ามาแล้ว)
+      const end = Math.min(i + BATCH * CHUNK_BATCHES, to);
+      processActions(actions.slice(i, end));
+      i = end;
+      actionIdx = i;
+      syncMeshTexture();
+      rebuildSlabIfDirty();
+      report();
+      if (i < to) requestAnimationFrame(step);
+      else onDone();
+    }
+    step();
+  }
+
+  function syncMeshTexture() {
+    if (mesh) mesh.material.uniforms.uHeightTex.value = rtA.texture;
+  }
+
+  /* =========================================================================
+   * หัวเครื่องมือ (เหมือนเวอร์ชันก่อน — ยังเป็น CPU mesh ธรรมดา เบาอยู่แล้ว)
+   * ====================================================================== */
+  function ensureToolMesh(tool) {
+    if (toolMesh) {
+      group.remove(toolMesh);
+      toolMesh.traverse((o) => { if (o.geometry) o.geometry.dispose(); if (o.material) o.material.dispose(); });
+    }
+    const dia = (tool && tool.diameter) || 6;
+    const mat = new THREE.MeshStandardMaterial({ color: 0x9aa7b4, metalness: 0.65, roughness: 0.3 });
+    const shaftLen = Math.max(baseThickness * 2.5, 40);
+    const grp = new THREE.Group();
+    const shaft = new THREE.Mesh(new THREE.CylinderGeometry(dia / 2, dia / 2, shaftLen, 16), mat);
+    shaft.position.y = shaftLen / 2;
+    grp.add(shaft);
+    if (tool && tool.toolType === 'vbit') {
+      const angle = (tool.vbitAngle || 90) * Math.PI / 180;
+      const tipLen = (dia / 2) / Math.tan(angle / 2);
+      const tip = new THREE.Mesh(new THREE.ConeGeometry(dia / 2, tipLen, 16), mat);
+      tip.position.y = -tipLen / 2;
+      grp.add(tip);
+    }
+    toolMesh = grp;
+    group.add(toolMesh);
+  }
+
+  function updateToolMesh(action) {
+    if (!toolMesh) return;
+    toolMesh.visible = true;
+    // กลับเครื่องหมาย Z เหมือนกับใน buildGeometry (ต้องสอดคล้องกันเสมอ ไม่งั้นหัวมีด
+    // จะไปอยู่ตำแหน่งสมมาตรตรงข้ามกับร่องที่กัดจริงบน mesh)
+    toolMesh.position.set(action.x - centerOffsetX(), action.h, -(action.y - centerOffsetY()));
+  }
+
+  // LOD threshold: ถ้า orbit.radius < LOD_RADIUS_THRESHOLD จะสร้าง geometry overlay
+  // แทนการใช้ heightmap อย่างเดียว ทำให้เห็นรูเจาะและ V-bit ชัดแม้ zoom เข้ามาก
+  const LOD_RADIUS_THRESHOLD_FACTOR = 0.4; // เมื่อ radius < span*0.4 = เริ่มแสดง LOD
+  let lodGroup = null;    // THREE.Group สำหรับ geometry overlay
+  let lodLastRadius = Infinity;
+  let lodJob = null;      // เก็บ job สำหรับ rebuild LOD
+
+  function buildLodOverlay(job, machine) {
+    if (lodGroup) {
+      scene.remove(lodGroup);
+      lodGroup.traverse(o => { if (o.geometry) o.geometry.dispose(); if (o.material) o.material.dispose(); });
+    }
+    lodGroup = new THREE.Group();
+    scene.add(lodGroup);
+    if (!job || !job.operations) return;
+
+    const z0Offset = machine.z0Mode === 'table' ? (parseFloat(machine.woodThickness) || 0) : 0;
+    const woodTop  = z0Offset; // Y ของผิวไม้บน ใน world space
+
+    /* ---- material ---- */
+    function makeMat(opacity) {
+      return new THREE.MeshStandardMaterial({
+        color: 0x5a3a1a, roughness: 0.85, metalness: 0.0,
+        transparent: opacity < 1, opacity: opacity, side: THREE.DoubleSide
+      });
+    }
+
+    /* ------------------------------------------------------------------ *
+     * sweepGroove: สร้าง BufferGeometry โดย extrude หน้าตัดตาม path      *
+     *   profile: array ของ {u, v} — u = แนวขวาของ path, v = แนวลง Y      *
+     *   path: [{x,y}] ใน DXF space                                        *
+     * ------------------------------------------------------------------ */
+    function sweepGroove(path, profile) {
+      if (path.length < 2 || profile.length < 2) return null;
+      const nSeg   = path.length - 1;
+      const nProf  = profile.length;
+      const nVerts = path.length * nProf;
+      const pos    = new Float32Array(nVerts * 3);
+      const idx    = [];
+
+      // สร้าง vertex แต่ละ cross-section ตาม tangent ของ path
+      for (let pi = 0; pi < path.length; pi++) {
+        const p  = path[pi];
+        // tangent: ใช้ forward/backward difference
+        let tx, tz;
+        if (pi === 0) {
+          tx = path[1].x - path[0].x; tz = path[1].y - path[0].y;
+        } else if (pi === path.length - 1) {
+          tx = path[pi].x - path[pi-1].x; tz = path[pi].y - path[pi-1].y;
+        } else {
+          tx = path[pi+1].x - path[pi-1].x; tz = path[pi+1].y - path[pi-1].y;
+        }
+        const tlen = Math.hypot(tx, tz) || 1;
+        tx /= tlen; tz /= tlen;
+        // right vector (90° CW ใน XZ plane): (tz, 0, -tx) → ใน world: right.x=tz, right.z=-tx
+        const rx = tz, rz = -tx;
+
+        for (let qi = 0; qi < nProf; qi++) {
+          const { u, v } = profile[qi];
+          const vIdx = (pi * nProf + qi) * 3;
+          pos[vIdx]     = (p.x - centerOffsetX()) + rx * u;
+          pos[vIdx + 1] = woodTop + v;           // v เป็นค่าลบ = ลึกลงไป
+          pos[vIdx + 2] = -(p.y - centerOffsetY()) + rz * u;
+        }
+      }
+
+      // สร้าง faces ระหว่าง cross-section ติดกัน
+      for (let si = 0; si < nSeg; si++) {
+        for (let qi = 0; qi < nProf - 1; qi++) {
+          const a = si * nProf + qi;
+          const b = a + 1;
+          const c2 = (si + 1) * nProf + qi;
+          const d  = c2 + 1;
+          idx.push(a, c2, b,  b, c2, d);
+        }
+      }
+
+      const geo = new THREE.BufferGeometry();
+      geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+      geo.setIndex(idx);
+      geo.computeVertexNormals();
+      return geo;
+    }
+
+    /* ---- profiles ---- */
+    function endmillProfile(r, depth) {
+      // U-shape: ผนังซ้าย → ก้น → ผนังขวา (v = 0 บน, -depth ล่าง)
+      return [
+        { u: -r, v:  0     },
+        { u: -r, v: -depth },
+        { u:  0, v: -depth },
+        { u:  r, v: -depth },
+        { u:  r, v:  0     }
+      ];
+    }
+
+    function vbitProfile(depth, halfAngle) {
+      // V-shape: จากซ้ายบน → ปลาย → ขวาบน
+      const w = depth * Math.tan(halfAngle);
+      return [
+        { u: -w, v:  0     },
+        { u:  0, v: -depth },
+        { u:  w, v:  0     }
+      ];
+    }
+
+    job.operations.forEach(op => {
+      const tool    = op.tool;
+      if (!tool) return;
+      const r       = (tool.diameter || 6) / 2;
+      const isVbit  = tool.toolType === 'vbit';
+      const halfAng = isVbit ? ((parseFloat(tool.vbitAngle) || 90) * Math.PI / 180) / 2 : 0;
+      const passes  = op.passes && op.passes.length ? op.passes : [op.targetZ];
+      const depthZ  = passes[passes.length - 1];
+      const realH   = depthZ + z0Offset;
+      const grooveDepth = Math.max(0, (parseFloat(machine.woodThickness) || 18) - realH);
+
+      /* ---- Drill ---- */
+      if (op.kind === 'drill') {
+        if (grooveDepth < 0.01) return;
+        const segments = isVbit ? 20 : 24;
+        let geo;
+        if (isVbit) {
+          const coneR = grooveDepth * Math.tan(halfAng);
+          geo = new THREE.CylinderGeometry(coneR, 0, grooveDepth, segments, 1, false);
+        } else {
+          geo = new THREE.CylinderGeometry(r, r, grooveDepth, segments, 1, false);
+        }
+        const m = new THREE.Mesh(geo, makeMat(0.92));
+        m.position.set(
+          op.point.x - centerOffsetX(),
+          woodTop - grooveDepth / 2,
+          -(op.point.y - centerOffsetY())
+        );
+        lodGroup.add(m);
+        return;
+      }
+
+      /* ---- Contour ---- */
+      if (op.kind === 'contour' && op.path && op.path.length >= 2 && grooveDepth > 0.01) {
+        const profile = isVbit
+          ? vbitProfile(grooveDepth, halfAng)
+          : endmillProfile(r, grooveDepth);
+        const geo = sweepGroove(op.path, profile);
+        if (geo) lodGroup.add(new THREE.Mesh(geo, makeMat(0.88)));
+      }
+
+      /* ---- Pocket rings ---- */
+      if (op.kind === 'pocket' && op.rings && grooveDepth > 0.01) {
+        const profile = endmillProfile(r, grooveDepth);
+        op.rings.forEach(ring => {
+          if (!ring || ring.length < 2) return;
+          const geo = sweepGroove(ring, profile);
+          if (geo) lodGroup.add(new THREE.Mesh(geo, makeMat(0.88)));
+        });
+      }
+    });
+  }
+  function updateLod() {
+    if (!lodJob) return;
+    const span = Math.max(boundsW || 1, boundsH || 1);
+    const threshold = span * LOD_RADIUS_THRESHOLD_FACTOR;
+    const nowClose = orbit.radius < threshold;
+    const wasClose = lodLastRadius < threshold;
+    if (nowClose !== wasClose) {
+      if (nowClose) {
+        buildLodOverlay(lodJob.lastJob, lodJob.machine);
+      } else {
+        if (lodGroup) { scene.remove(lodGroup); lodGroup = null; }
+      }
+    }
+    lodLastRadius = orbit.radius;
+  }
+
+  function frameCamera() {
+    const span = Math.max(boundsW, boundsH, baseThickness * 3);
+    orbit.target.set(0, baseThickness / 2, 0);
+    orbit.radius = span * 1.25;
+    // theta = 0: กล้องอยู่บนแกน Z ล้วน ๆ (ไม่ผสมแกน X) -> แกน X จริงแม็พเป็นซ้าย-ขวา
+    // บนจอแบบล้วน ๆ ไม่ปนกับแกน Y จริง (ดู comment ที่ buildGeometry/updateToolMesh
+    // เรื่องการกลับเครื่องหมายแกน Z เพื่อให้ Y จริง = บน-ล่าง ตรงกับ preview 2D เดิม)
+    orbit.theta = 0;
+    orbit.phi = Math.PI * 0.32;
+    updateCamera();
+  }
+
+  function dispose() {
+    playing = false;
+  }
+
+  global.Simulate3D = { init, loadJob, play, pause, setSpeed, seekTo, setProgressCallback, dispose };
+
+})(typeof window !== 'undefined' ? window : globalThis);
