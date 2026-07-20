@@ -16,6 +16,17 @@
         f = (t.EXCLUDED_LAYERS || []).filter(e => "_ABF_SHEET_BORDER" !== e),
         m = "_ABF_SHEET_BORDER";
     let h = null;
+    const layerColorRegistry = new Map;
+    let nextLayerColorIndex = 0;
+
+    function resetLayerColorRegistry() {
+        layerColorRegistry.clear(), nextLayerColorIndex = 0
+    }
+
+    function colorForLayerName(e) {
+        const t = String(e || "");
+        return layerColorRegistry.has(t) || (layerColorRegistry.set(t, p[nextLayerColorIndex % p.length]), nextLayerColorIndex++), layerColorRegistry.get(t)
+    }
 
     function b() {
         clearTimeout(h), g("กำลังจะบันทึก..."), h = setTimeout(y, 900)
@@ -109,7 +120,7 @@
             b = {};
         s.layers.forEach((e, o) => {
             if (e === m || -1 !== f.indexOf(e)) return;
-            h[e] = p[o % p.length], b[e] = !0;
+            h[e] = colorForLayerName(e), b[e] = !0;
             const n = v(e);
             e === t.LOCKED_LAST_LAYER && (n.depth = "pt+cd")
         });
@@ -197,6 +208,7 @@
                 he(["เปิด ZIP " + o.file.name + " ไม่สำเร็จ: " + e.message])
             } else t.push(o);
         if (t.length) {
+            resetLayerColorRegistry();
             r.length && [...r].forEach(e => w(e.id));
             for (const e of t) await x(e)
         }
